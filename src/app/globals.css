@@ -1,15 +1,35 @@
 @import "tailwindcss";
 
+/* Tailwind CSS v4: use the .dark class for dark: utilities */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   color-scheme: light;
   --background: #f5f7f4;
   --foreground: #20372e;
+  --surface: #ffffff;
+  --surface-secondary: #f8faf7;
+  --border: #e2e9e2;
+  --muted: #65766b;
+  --input-background: #fafbf8;
+  --input-border: #dfe7dc;
+  --accent: #28714e;
+  --accent-soft: #e7f1e2;
 }
 
+html.dark,
 html[data-theme="dark"] {
   color-scheme: dark;
   --background: #101a14;
   --foreground: #e1ebe3;
+  --surface: #17251c;
+  --surface-secondary: #14221b;
+  --border: #304438;
+  --muted: #a9b8ac;
+  --input-background: #17251c;
+  --input-border: #3a5141;
+  --accent: #8bd9ae;
+  --accent-soft: #24382b;
 }
 
 @theme inline {
@@ -24,15 +44,17 @@ html[data-theme="dark"] {
 }
 
 html {
+  min-height: 100%;
   scroll-behavior: smooth;
   scroll-padding-top: 6rem;
 }
 
 body {
-  min-height: 100%;
+  min-height: 100vh;
+  margin: 0;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, "Noto Sans Bengali", sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, "Noto Sans Bengali", sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   transition: background-color 180ms ease, color 180ms ease;
@@ -41,7 +63,8 @@ body {
 button,
 a,
 input,
-textarea {
+textarea,
+select {
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -55,539 +78,149 @@ a {
   color: #173f32;
 }
 
+.dark ::selection {
+  background: #315b43;
+  color: #ffffff;
+}
+
 :focus-visible {
   outline: 3px solid rgba(105, 173, 125, 0.48);
   outline-offset: 2px;
 }
 
-html[data-theme="dark"] body {
-  background: #101a14;
-  color: #e1ebe3;
+/* Reusable surfaces */
+.theme-surface {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--foreground);
 }
 
-html[data-theme="dark"] .bg-white,
-html[data-theme="dark"] [class~="bg-white/90"] {
-  background-color: #17251c !important;
+.theme-surface-secondary {
+  background: var(--surface-secondary);
+  color: var(--foreground);
 }
 
-html[data-theme="dark"] [class~="focus:bg-white"]:focus {
-  background-color: #17251c !important;
+/* Forms */
+.form-input {
+  width: 100%;
+  border: 1px solid var(--input-border);
+  border-radius: 0.75rem;
+  background: var(--input-background);
+  padding: 0.75rem 1rem;
+  color: var(--foreground);
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 180ms ease, background-color 180ms ease,
+    box-shadow 180ms ease;
 }
 
-html[data-theme="dark"] .border-white {
-  border-color: #304438 !important;
+.form-input::placeholder {
+  color: var(--muted);
 }
 
-html[data-theme="dark"] .text-black {
-  color: #e1ebe3 !important;
+.form-input:hover {
+  border-color: #9bb99b;
 }
 
-html[data-theme="dark"] input,
-html[data-theme="dark"] textarea,
-html[data-theme="dark"] select {
+.form-input:focus {
+  border-color: #72a66b;
+  background: var(--surface);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+.form-input:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Native form controls */
+input,
+textarea,
+select {
+  color: var(--foreground);
+}
+
+.dark input,
+.dark textarea,
+.dark select {
   color-scheme: dark;
 }
 
-html[data-theme="dark"] ::-webkit-scrollbar {
+/* Scrollbars */
+.dark ::-webkit-scrollbar {
   width: 9px;
   height: 9px;
 }
 
-html[data-theme="dark"] ::-webkit-scrollbar-track {
+.dark ::-webkit-scrollbar-track {
   background: #111d16;
 }
 
-html[data-theme="dark"] ::-webkit-scrollbar-thumb {
+.dark ::-webkit-scrollbar-thumb {
   background: #3a5141;
   border: 2px solid #111d16;
   border-radius: 99px;
 }
 
-
-/* Dark theme surfaces generated for the existing light-palette utility classes. */
-html[data-theme="dark"] [class~="bg-[#e4ece4]"] {
-  background-color: #17271e !important;
-}
-
-html[data-theme="dark"] [class~="bg-[#e5f0e8]"] {
-  background-color: #17271e !important;
-}
-
-html[data-theme="dark"] [class~="bg-[#e8f2e9]"] {
-  background-color: #17271e !important;
-}
-
-html[data-theme="dark"] [class~="bg-[#eaf1f7]"] {
-  background-color: #17271e !important;
-}
-
-html[data-theme="dark"] [class~="bg-[#eaf3eb]"] {
-  background-color: #17271e !important;
-}
-
-html[data-theme="dark"] [class~="bg-[#eaf4ec]"] {
-  background-color: #17271e !important;
-}
-
-html[data-theme="dark"] [class~="bg-[#edf1ed]"] {
-  background-color: #17271e !important;
-}
-
-html[data-theme="dark"] [class~="bg-[#edf5ef]"] {
-  background-color: #17271e !important;
-}
-
-html[data-theme="dark"] [class~="bg-[#eef6ef]"] {
-  background-color: #17271e !important;
-}
-
-html[data-theme="dark"] [class~="bg-[#f3f6f2]"] {
-  background-color: #17271e !important;
-}
-
-html[data-theme="dark"] [class~="bg-[#f3f8f3]"] {
-  background-color: #14221b !important;
-}
-
-html[data-theme="dark"] [class~="bg-[#f4f6f3]"] {
-  background-color: #17271e !important;
-}
-
-html[data-theme="dark"] [class~="bg-[#f5f7f4]"] {
-  background-color: #14221b !important;
-}
-
-html[data-theme="dark"] [class~="bg-[#f5faf5]"] {
-  background-color: #14221b !important;
-}
-
-html[data-theme="dark"] [class~="bg-[#f8faf7]"] {
-  background-color: #14221b !important;
-}
-
-html[data-theme="dark"] [class~="bg-[#fafcf9]"] {
-  background-color: #14221b !important;
-}
-
-html[data-theme="dark"] [class~="bg-[#fbf1df]"] {
-  background-color: #17271e !important;
-}
-
-html[data-theme="dark"] [class~="bg-[#fbfcfa]"] {
-  background-color: #14221b !important;
-}
-
-html[data-theme="dark"] [class~="bg-[#fcfdfb]"] {
-  background-color: #14221b !important;
-}
-
-html[data-theme="dark"] [class~="border-[#cbdccc]"] {
-  border-color: #304438 !important;
-}
-
-html[data-theme="dark"] [class~="border-[#cfe2d2]"] {
-  border-color: #304438 !important;
-}
-
-html[data-theme="dark"] [class~="border-[#d2dfd4]"] {
-  border-color: #304438 !important;
-}
-
-html[data-theme="dark"] [class~="border-[#d7e4d8]"] {
-  border-color: #304438 !important;
-}
-
-html[data-theme="dark"] [class~="border-[#dce6dc]"] {
-  border-color: #304438 !important;
-}
-
-html[data-theme="dark"] [class~="border-[#dce8dc]"] {
-  border-color: #304438 !important;
-}
-
-html[data-theme="dark"] [class~="border-[#dce9df]"] {
-  border-color: #304438 !important;
-}
-
-html[data-theme="dark"] [class~="border-[#e2e9e2]"] {
-  border-color: #304438 !important;
-}
-
-html[data-theme="dark"] [class~="border-[#e2ebe2]"] {
-  border-color: #304438 !important;
-}
-
-html[data-theme="dark"] [class~="border-[#e3eae3]"] {
-  border-color: #304438 !important;
-}
-
-html[data-theme="dark"] [class~="border-[#e3ebe3]"] {
-  border-color: #304438 !important;
-}
-
-html[data-theme="dark"] [class~="border-[#e4eae4]"] {
-  border-color: #304438 !important;
-}
-
-html[data-theme="dark"] [class~="border-[#e4ebe4]"] {
-  border-color: #304438 !important;
-}
-
-html[data-theme="dark"] [class~="border-[#e5ebe5]"] {
-  border-color: #304438 !important;
-}
-
-html[data-theme="dark"] [class~="border-[#e5ece5]"] {
-  border-color: #304438 !important;
-}
-
-html[data-theme="dark"] [class~="border-[#e5eee5]"] {
-  border-color: #304438 !important;
-}
-
-html[data-theme="dark"] [class~="border-[#e6ebe6]"] {
-  border-color: #304438 !important;
-}
-
-html[data-theme="dark"] [class~="border-[#e7ede7]"] {
-  border-color: #304438 !important;
-}
-
-html[data-theme="dark"] [class~="border-[#e8eee8]"] {
-  border-color: #304438 !important;
-}
-
-html[data-theme="dark"] [class~="border-[#edf1ed]"] {
-  border-color: #304438 !important;
-}
-
-html[data-theme="dark"] [class~="hover:bg-[#dcecdf]"]:hover {
-  background-color: #24382b !important;
-}
-
-html[data-theme="dark"] [class~="hover:bg-[#e1f0e3]"]:hover {
-  background-color: #24382b !important;
-}
-
-html[data-theme="dark"] [class~="hover:bg-[#f2f6f2]"]:hover {
-  background-color: #24382b !important;
-}
-
-html[data-theme="dark"] [class~="hover:bg-[#f2f7f2]"]:hover {
-  background-color: #24382b !important;
-}
-
-html[data-theme="dark"] [class~="hover:bg-[#f3f7f3]"]:hover {
-  background-color: #24382b !important;
-}
-
-html[data-theme="dark"] [class~="hover:bg-[#f5faf5]"]:hover {
-  background-color: #24382b !important;
-}
-
-html[data-theme="dark"] [class~="hover:bg-[#f6f9f6]"]:hover {
-  background-color: #24382b !important;
-}
-
-html[data-theme="dark"] [class~="hover:text-[#194b32]"]:hover {
-  color: #e4eee5 !important;
-}
-
-html[data-theme="dark"] [class~="hover:text-[#20372e]"]:hover {
-  color: #e4eee5 !important;
-}
-
-html[data-theme="dark"] [class~="hover:text-[#244b38]"]:hover {
-  color: #e4eee5 !important;
-}
-
-html[data-theme="dark"] [class~="hover:text-[#315d42]"]:hover {
-  color: #e4eee5 !important;
-}
-
-html[data-theme="dark"] [class~="hover:text-[#385b46]"]:hover {
-  color: #e4eee5 !important;
-}
-
-html[data-theme="dark"] [class~="placeholder:text-[#a4afa7]"]::placeholder {
-  color: #84958a !important;
-}
-
-html[data-theme="dark"] [class~="text-[#193b2f]"] {
-  color: #dce9df !important;
-}
-
-html[data-theme="dark"] [class~="text-[#20372e]"] {
-  color: #dce9df !important;
-}
-
-html[data-theme="dark"] [class~="text-[#203c30]"] {
-  color: #dce9df !important;
-}
-
-html[data-theme="dark"] [class~="text-[#245c40]"] {
-  color: #dce9df !important;
-}
-
-html[data-theme="dark"] [class~="text-[#263d30]"] {
-  color: #dce9df !important;
-}
-
-html[data-theme="dark"] [class~="text-[#276448]"] {
-  color: #dce9df !important;
-}
-
-html[data-theme="dark"] [class~="text-[#28583d]"] {
-  color: #dce9df !important;
-}
-
-html[data-theme="dark"] [class~="text-[#286448]"] {
-  color: #dce9df !important;
-}
-
-html[data-theme="dark"] [class~="text-[#28714e]"] {
-  color: #dce9df !important;
-}
-
-html[data-theme="dark"] [class~="text-[#294638]"] {
-  color: #dce9df !important;
-}
-
-html[data-theme="dark"] [class~="text-[#2b704b]"] {
-  color: #dce9df !important;
-}
-
-html[data-theme="dark"] [class~="text-[#36724d]"] {
-  color: #dce9df !important;
-}
-
-html[data-theme="dark"] [class~="text-[#37764f]"] {
-  color: #dce9df !important;
-}
-
-html[data-theme="dark"] [class~="text-[#385343]"] {
-  color: #dce9df !important;
-}
-
-html[data-theme="dark"] [class~="text-[#388765]"] {
-  color: #dce9df !important;
-}
-
-html[data-theme="dark"] [class~="text-[#3c5947]"] {
-  color: #dce9df !important;
-}
-
-html[data-theme="dark"] [class~="text-[#42634d]"] {
-  color: #dce9df !important;
-}
-
-html[data-theme="dark"] [class~="text-[#43594b]"] {
-  color: #a9b8ac !important;
-}
-
-html[data-theme="dark"] [class~="text-[#4a9165]"] {
-  color: #dce9df !important;
-}
-
-html[data-theme="dark"] [class~="text-[#4b8b61]"] {
-  color: #dce9df !important;
-}
-
-html[data-theme="dark"] [class~="text-[#52665a]"] {
-  color: #a9b8ac !important;
-}
-
-html[data-theme="dark"] [class~="text-[#52715d]"] {
-  color: #dce9df !important;
-}
-
-html[data-theme="dark"] [class~="text-[#527a9b]"] {
-  color: #dce9df !important;
-}
-
-html[data-theme="dark"] [class~="text-[#568064]"] {
-  color: #dce9df !important;
-}
-
-html[data-theme="dark"] [class~="text-[#5f9673]"] {
-  color: #dce9df !important;
-}
-
-html[data-theme="dark"] [class~="text-[#617166]"] {
-  color: #a9b8ac !important;
-}
-
-html[data-theme="dark"] [class~="text-[#63866c]"] {
-  color: #dce9df !important;
-}
-
-html[data-theme="dark"] [class~="text-[#65766b]"] {
-  color: #a9b8ac !important;
-}
-
-html[data-theme="dark"] [class~="text-[#65766c]"] {
-  color: #a9b8ac !important;
-}
-
-html[data-theme="dark"] [class~="text-[#658071]"] {
-  color: #dce9df !important;
-}
-
-html[data-theme="dark"] [class~="text-[#6b9a7c]"] {
-  color: #dce9df !important;
-}
-
-html[data-theme="dark"] [class~="text-[#6e9d7c]"] {
-  color: #dce9df !important;
-}
-
-html[data-theme="dark"] [class~="text-[#718078]"] {
-  color: #a9b8ac !important;
-}
-
-html[data-theme="dark"] [class~="text-[#718278]"] {
-  color: #a9b8ac !important;
-}
-
-html[data-theme="dark"] [class~="text-[#75847b]"] {
-  color: #a9b8ac !important;
-}
-
-html[data-theme="dark"] [class~="text-[#77867c]"] {
-  color: #a9b8ac !important;
-}
-
-html[data-theme="dark"] [class~="text-[#7b8980]"] {
-  color: #a9b8ac !important;
-}
-
-html[data-theme="dark"] [class~="text-[#819087]"] {
-  color: #a9b8ac !important;
-}
-
-html[data-theme="dark"] [class~="text-[#829187]"] {
-  color: #a9b8ac !important;
-}
-
-html[data-theme="dark"] [class~="text-[#839087]"] {
-  color: #a9b8ac !important;
-}
-
-html[data-theme="dark"] [class~="text-[#849188]"] {
-  color: #a9b8ac !important;
-}
-
-html[data-theme="dark"] [class~="text-[#89968d]"] {
-  color: #a9b8ac !important;
-}
-
-html[data-theme="dark"] [class~="text-[#8a9a90]"] {
-  color: #a9b8ac !important;
-}
-
-html[data-theme="dark"] [class~="text-[#8b988f]"] {
-  color: #a9b8ac !important;
-}
-
-html[data-theme="dark"] [class~="text-[#8b998e]"] {
-  color: #a9b8ac !important;
-}
-
-html[data-theme="dark"] [class~="text-[#8b9a8f]"] {
-  color: #a9b8ac !important;
-}
-
-html[data-theme="dark"] [class~="text-[#91a095]"] {
-  color: #a9b8ac !important;
-}
-
-html[data-theme="dark"] [class~="text-[#91a096]"] {
-  color: #a9b8ac !important;
-}
-
-html[data-theme="dark"] [class~="text-[#93a096]"] {
-  color: #a9b8ac !important;
-}
-
-html[data-theme="dark"] [class~="text-[#96a198]"] {
-  color: #a9b8ac !important;
-}
-
-html[data-theme="dark"] [class~="text-[#9aa69e]"] {
-  color: #a9b8ac !important;
-}
-
-html[data-theme="dark"] [class~="text-[#a0aaa2]"] {
-  color: #a9b8ac !important;
-}
-
-html[data-theme="dark"] [class~="text-[#a1aca3]"] {
-  color: #a9b8ac !important;
-}
-
-html[data-theme="dark"] [class~="text-[#a2ada4]"] {
-  color: #a9b8ac !important;
-}
-
-/* Keep semantic status colors legible in dark mode. */
-html[data-theme="dark"] .bg-sky-50 {
-  background-color: #172b3b !important;
+/* Semantic status colors */
+.dark .bg-sky-50 {
+  background-color: #172b3b;
 }
 
-html[data-theme="dark"] .text-sky-700 {
-  color: #8cc9f2 !important;
+.dark .text-sky-700 {
+  color: #8cc9f2;
 }
 
-html[data-theme="dark"] .border-sky-200 {
-  border-color: #31536a !important;
+.dark .border-sky-200 {
+  border-color: #31536a;
 }
 
-html[data-theme="dark"] .bg-amber-50 {
-  background-color: #332918 !important;
+.dark .bg-amber-50 {
+  background-color: #332918;
 }
 
-html[data-theme="dark"] .text-amber-700 {
-  color: #f2c879 !important;
+.dark .text-amber-700 {
+  color: #f2c879;
 }
 
-html[data-theme="dark"] .border-amber-200 {
-  border-color: #66502a !important;
+.dark .border-amber-200 {
+  border-color: #66502a;
 }
 
-html[data-theme="dark"] .bg-violet-50 {
-  background-color: #29213b !important;
+.dark .bg-violet-50 {
+  background-color: #29213b;
 }
 
-html[data-theme="dark"] .text-violet-700 {
-  color: #c7a9f4 !important;
+.dark .text-violet-700 {
+  color: #c7a9f4;
 }
 
-html[data-theme="dark"] .border-violet-200 {
-  border-color: #51406f !important;
+.dark .border-violet-200 {
+  border-color: #51406f;
 }
 
-html[data-theme="dark"] .bg-emerald-50 {
-  background-color: #183329 !important;
+.dark .bg-emerald-50 {
+  background-color: #183329;
 }
 
-html[data-theme="dark"] .text-emerald-700 {
-  color: #8bd9ae !important;
+.dark .text-emerald-700 {
+  color: #8bd9ae;
 }
 
-html[data-theme="dark"] .border-emerald-200 {
-  border-color: #315b43 !important;
+.dark .border-emerald-200 {
+  border-color: #315b43;
 }
 
-html[data-theme="dark"] .bg-rose-50 {
-  background-color: #3a2024 !important;
+.dark .bg-rose-50 {
+  background-color: #3a2024;
 }
 
-html[data-theme="dark"] .text-rose-700 {
-  color: #f1a0a7 !important;
+.dark .text-rose-700 {
+  color: #f1a0a7;
 }
 
-html[data-theme="dark"] .border-rose-200 {
-  border-color: #6a343c !important;
+.dark .border-rose-200 {
+  border-color: #6a343c;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -601,3 +234,541 @@ html[data-theme="dark"] .border-rose-200 {
     transition-duration: 0.01ms !important;
   }
 }
+
+
+/* =========================================
+   CIVICSENSE AI — STUDENT DASHBOARD DARK MODE
+   Compatibility layer for existing light classes
+========================================= */
+
+html.dark body {
+  background: #101a14 !important;
+  color: #e1ebe3 !important;
+}
+
+/* Main dashboard surfaces */
+html.dark .bg-white,
+html.dark [class~="bg-white/95"],
+html.dark [class~="bg-white/90"] {
+  background-color: #17251c !important;
+}
+
+html.dark [class~="bg-[#f4f6f1]"],
+html.dark [class~="bg-[#f5f7f2]"],
+html.dark [class~="bg-[#f8faf6]"],
+html.dark [class~="bg-[#f8faf6]/95"],
+html.dark [class~="bg-[#f6faf3]"],
+html.dark [class~="bg-[#f0f7ec]"],
+html.dark [class~="bg-[#edf5e8]"],
+html.dark [class~="bg-[#eaf4e4]"],
+html.dark [class~="bg-[#eaf3e4]"],
+html.dark [class~="bg-[#e8f2e3]"],
+html.dark [class~="bg-[#e5f0df]"],
+html.dark [class~="bg-[#f1f4ef]"] {
+  background-color: #14221b !important;
+}
+
+/* Dashboard cards and panels */
+html.dark [class~="bg-[#f8faf6]"],
+html.dark [class~="bg-[#fafbf8]"] {
+  background-color: #14221b !important;
+}
+
+/* Borders */
+html.dark [class~="border-[#e3e9df]"],
+html.dark [class~="border-[#e4ebe1]"],
+html.dark [class~="border-[#e2e9de]"],
+html.dark [class~="border-[#e2e9df]"],
+html.dark [class~="border-[#e1e8df]"],
+html.dark [class~="border-[#e1e8dc]"],
+html.dark [class~="border-[#e4e9e1]"],
+html.dark [class~="border-[#e3e9df]"],
+html.dark [class~="border-[#edf1eb]"],
+html.dark [class~="border-[#e5ece3]"],
+html.dark [class~="border-[#e3ebdf]"],
+html.dark [class~="border-[#e4ece0]"],
+html.dark [class~="border-[#dce9d7]"],
+html.dark [class~="border-[#e1eadc]"],
+html.dark [class~="border-[#e3ecdf]"],
+html.dark [class~="border-[#e6ece3]"],
+html.dark [class~="border-[#dfe9da]"],
+html.dark [class~="border-[#d6e2d2]"] {
+  border-color: #304438 !important;
+}
+
+/* Main text */
+html.dark [class~="text-[#192b20]"],
+html.dark [class~="text-[#20392b]"],
+html.dark [class~="text-[#20392b]"],
+html.dark [class~="text-[#294534]"],
+html.dark [class~="text-[#294638]"],
+html.dark [class~="text-[#405b48]"],
+html.dark [class~="text-[#304c37]"],
+html.dark [class~="text-[#3c5947]"],
+html.dark [class~="text-[#315c38]"],
+html.dark [class~="text-[#52675a]"],
+html.dark [class~="text-[#53675a]"] {
+  color: #dce9df !important;
+}
+
+/* Secondary text */
+html.dark [class~="text-[#617368]"],
+html.dark [class~="text-[#718076]"],
+html.dark [class~="text-[#718078]"],
+html.dark [class~="text-[#78887c]"],
+html.dark [class~="text-[#7c8a7e]"],
+html.dark [class~="text-[#829087]"],
+html.dark [class~="text-[#829187]"],
+html.dark [class~="text-[#839087]"],
+html.dark [class~="text-[#879389]"],
+html.dark [class~="text-[#87958a]"],
+html.dark [class~="text-[#89968b]"],
+html.dark [class~="text-[#8d9a8f]"],
+html.dark [class~="text-[#92a093]"],
+html.dark [class~="text-[#93a096]"],
+html.dark [class~="text-[#96a198]"],
+html.dark [class~="text-[#98a299]"],
+html.dark [class~="text-[#98a399]"],
+html.dark [class~="text-[#9aa69e]"],
+html.dark [class~="text-[#9aa69e]"] {
+  color: #a9b8ac !important;
+}
+
+/* Form fields */
+html.dark .form-input {
+  background-color: #17251c !important;
+  border-color: #3a5141 !important;
+  color: #e1ebe3 !important;
+}
+
+html.dark .form-input::placeholder {
+  color: #84958a !important;
+}
+
+html.dark .form-input:focus {
+  background-color: #1b2c21 !important;
+}
+
+html.dark [class~="hover:bg-[#f4f8f1]"]:hover,
+html.dark [class~="hover:bg-[#f4f7f2]"]:hover,
+html.dark [class~="hover:bg-[#f8faf6]"]:hover,
+html.dark [class~="hover:bg-[#edf3ea]"]:hover,
+html.dark [class~="hover:bg-[#e5f2dd]"]:hover {
+  background-color: #24382b !important;
+}
+
+
+html.dark [class~="bg-[#edf5e8]"] {
+  background-color: #1c3022 !important;
+}
+
+html.dark [class~="bg-[#f6faf3]"] {
+  background-color: #14221b !important;
+}
+
+html.dark [class~="bg-[#173f2e]"],
+html.dark [class~="bg-[#102d22]"],
+html.dark [class~="bg-[#1e5b38]"],
+html.dark [class~="bg-[#315c43]"] {
+  color: white;
+}
+
+
+html.dark input,
+html.dark textarea,
+html.dark select {
+  color-scheme: dark;
+}
+
+/* Admin Page CSS */
+
+
+/* =========================================
+   ADMIN CONSOLE — LIGHT MODE
+   Dark mode retains the existing design.
+========================================= */
+
+html[data-theme="light"] .admin-console {
+  background: #f4f7f2 !important;
+  color: #20372b !important;
+}
+
+html[data-theme="light"] .admin-console aside {
+  background: #ffffff !important;
+  border-color: #e1e9df !important;
+}
+
+html[data-theme="light"] .admin-console header {
+  background: rgb(248 250 246 / 94%) !important;
+  border-color: #e1e9df !important;
+}
+
+html[data-theme="light"] .admin-console [class*="bg-[#12231a]"],
+html[data-theme="light"] .admin-console [class*="bg-[#102119]"],
+html[data-theme="light"] .admin-console [class*="bg-[#14271b]"],
+html[data-theme="light"] .admin-console [class*="bg-[#101f16]"],
+html[data-theme="light"] .admin-console [class*="bg-[#0e1b13]"] {
+  background-color: #ffffff !important;
+}
+
+html[data-theme="light"] .admin-console [class*="bg-[#0b1711]"],
+html[data-theme="light"] .admin-console [class*="bg-[#0d1b13]"] {
+  background-color: #f2f6f0 !important;
+}
+
+html[data-theme="light"] .admin-console [class*="border-white"] {
+  border-color: #e0e8df !important;
+}
+
+html[data-theme="light"] .admin-console [class*="text-white"],
+html[data-theme="light"] .admin-console [class*="text-[#e8f1eb]"],
+html[data-theme="light"] .admin-console [class*="text-[#edf5ef]"],
+html[data-theme="light"] .admin-console [class*="text-[#e4eee7]"],
+html[data-theme="light"] .admin-console [class*="text-[#d9e8dd]"],
+html[data-theme="light"] .admin-console [class*="text-[#d8e6dc]"] {
+  color: #20372b !important;
+}
+
+html[data-theme="light"] .admin-console [class*="text-[#c0d2c6]"],
+html[data-theme="light"] .admin-console [class*="text-[#c6d6cb]"],
+html[data-theme="light"] .admin-console [class*="text-[#b9ccbf]"],
+html[data-theme="light"] .admin-console [class*="text-[#b8cbbd]"],
+html[data-theme="light"] .admin-console [class*="text-[#b5c7ba]"],
+html[data-theme="light"] .admin-console [class*="text-[#a9c1b0]"],
+html[data-theme="light"] .admin-console [class*="text-[#9db2a3]"],
+html[data-theme="light"] .admin-console [class*="text-[#91a79a]"],
+html[data-theme="light"] .admin-console [class*="text-[#82998b]"],
+html[data-theme="light"] .admin-console [class*="text-[#718b7b]"],
+html[data-theme="light"] .admin-console [class*="text-[#657c6c]"] {
+  color: #647568 !important;
+}
+
+html[data-theme="light"] .admin-console input,
+html[data-theme="light"] .admin-console select,
+html[data-theme="light"] .admin-console textarea {
+  background-color: #ffffff !important;
+  color: #20372b !important;
+  border-color: #dce6db !important;
+  color-scheme: light;
+}
+
+html[data-theme="light"] .admin-console input::placeholder {
+  color: #87958a !important;
+}
+
+html[data-theme="light"] .admin-console option {
+  background: #ffffff;
+  color: #20372b;
+}
+
+html[data-theme="light"] .admin-console [class*="hover:bg-white"]:hover {
+  background-color: #edf3eb !important;
+}
+
+html[data-theme="light"] .admin-console article,
+html[data-theme="light"] .admin-console details {
+  border-color: #e0e8df;
+}
+
+/* Keep the hero visually rich in both themes */
+html[data-theme="light"] .admin-console .bg-gradient-to-br {
+  color: #ffffff !important;
+}
+
+/* Preserve status and priority colors */
+html[data-theme="light"] .admin-console [class*="text-emerald-300"],
+html[data-theme="light"] .admin-console [class*="text-emerald-400"] {
+  color: #16834a;
+}
+
+html[data-theme="light"] .admin-console [class*="text-sky-300"] {
+  color: #1476b8;
+}
+
+html[data-theme="light"] .admin-console [class*="text-amber-300"] {
+  color: #a66b08;
+}
+
+html[data-theme="light"] .admin-console [class*="text-rose-300"] {
+  color: #c13b52;
+}
+
+html[data-theme="light"] .admin-console [class*="text-violet-300"] {
+  color: #7650b7;
+}
+
+/* Admin and Analytics light theme */
+html:not(.dark) .admin-console {
+  background: #f4f7f2 !important;
+  color: #20372b !important;
+}
+
+html:not(.dark) .admin-console aside {
+  background: #ffffff !important;
+  border-color: #e1e9df !important;
+}
+
+html:not(.dark) .admin-console header {
+  background: rgb(248 250 246 / 94%) !important;
+  border-color: #e1e9df !important;
+}
+
+html:not(.dark) .admin-console [class*="bg-[#12231a]"],
+html:not(.dark) .admin-console [class*="bg-[#102119]"],
+html:not(.dark) .admin-console [class*="bg-[#14271b]"],
+html:not(.dark) .admin-console [class*="bg-[#101f16]"],
+html:not(.dark) .admin-console [class*="bg-[#0e1b13]"] {
+  background-color: #ffffff !important;
+}
+
+html:not(.dark) .admin-console [class*="bg-[#0b1711]"],
+html:not(.dark) .admin-console [class*="bg-[#0d1b13]"] {
+  background-color: #f2f6f0 !important;
+}
+
+html:not(.dark) .admin-console [class*="bg-[#263a2e]"] {
+  background-color: #e5ece3 !important;
+}
+
+html:not(.dark) .admin-console [class*="border-white"] {
+  border-color: #e0e8df !important;
+}
+
+html:not(.dark) .admin-console [class*="text-white"],
+html:not(.dark) .admin-console [class*="text-[#e8f1eb]"],
+html:not(.dark) .admin-console [class*="text-[#edf5ef]"],
+html:not(.dark) .admin-console [class*="text-[#e4eee7]"],
+html:not(.dark) .admin-console [class*="text-[#d9e8dd]"],
+html:not(.dark) .admin-console [class*="text-[#d8e6dc]"] {
+  color: #20372b !important;
+}
+
+html:not(.dark) .admin-console [class*="text-[#c0d2c6]"],
+html:not(.dark) .admin-console [class*="text-[#c0d5c7]"],
+html:not(.dark) .admin-console [class*="text-[#c6d6cb]"],
+html:not(.dark) .admin-console [class*="text-[#b9ccbf]"],
+html:not(.dark) .admin-console [class*="text-[#b8cbbd]"],
+html:not(.dark) .admin-console [class*="text-[#b6c8bc]"],
+html:not(.dark) .admin-console [class*="text-[#b5c7ba]"],
+html:not(.dark) .admin-console [class*="text-[#a9c1b0]"],
+html:not(.dark) .admin-console [class*="text-[#9db2a3]"],
+html:not(.dark) .admin-console [class*="text-[#91a79a]"],
+html:not(.dark) .admin-console [class*="text-[#82998b]"],
+html:not(.dark) .admin-console [class*="text-[#789083]"],
+html:not(.dark) .admin-console [class*="text-[#718b7b]"],
+html:not(.dark) .admin-console [class*="text-[#657c6c]"] {
+  color: #647568 !important;
+}
+
+html:not(.dark) .admin-console input,
+html:not(.dark) .admin-console select,
+html:not(.dark) .admin-console textarea {
+  background-color: #ffffff !important;
+  color: #20372b !important;
+  border-color: #dce6db !important;
+  color-scheme: light;
+}
+
+html:not(.dark) .admin-console input::placeholder {
+  color: #87958a !important;
+}
+
+html:not(.dark) .admin-console option {
+  background: #ffffff;
+  color: #20372b;
+}
+
+html:not(.dark) .admin-console [class*="hover:bg-white"]:hover {
+  background-color: #edf3eb !important;
+}
+
+html:not(.dark) .admin-console [class*="hover:text-white"]:hover {
+  color: #20372b !important;
+}
+
+/* Keep the hero gradient and its text rich in both themes */
+html:not(.dark) .admin-console .bg-gradient-to-br {
+  color: #ffffff !important;
+}
+
+html:not(.dark) .admin-console .bg-gradient-to-br h1,
+html:not(.dark) .admin-console .bg-gradient-to-br h1 span {
+  color: #ffffff !important;
+}
+
+html:not(.dark) .admin-console .bg-gradient-to-br p {
+  color: #d6e9dc !important;
+}
+
+/* Preserve semantic colors */
+html:not(.dark) .admin-console [class*="text-emerald-300"],
+html:not(.dark) .admin-console [class*="text-emerald-400"] {
+  color: #16834a;
+}
+
+html:not(.dark) .admin-console [class*="text-sky-300"] {
+  color: #1476b8;
+}
+
+html:not(.dark) .admin-console [class*="text-amber-300"] {
+  color: #a66b08;
+}
+
+html:not(.dark) .admin-console [class*="text-rose-300"] {
+  color: #c13b52;
+}
+
+html:not(.dark) .admin-console [class*="text-violet-300"] {
+  color: #7650b7;
+}
+
+
+/* CivicMap */
+@import "leaflet/dist/leaflet.css";
+
+.civic-map-container {
+  z-index: 1;
+  background: #eaf0e6;
+}
+
+.civic-map-popup {
+  min-width: 170px;
+  color: #294534;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.civic-map-popup-title {
+  display: block;
+  margin-bottom: 6px;
+  color: #1e5938;
+  font-size: 14px;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+
+.civic-map-popup p {
+  margin: 3px 0;
+}
+
+
+/* ============================================
+   CIVICSENSE AI — ADMIN LIGHT THEME
+   Dark mode retains the existing design.
+   ============================================ */
+
+html:not(.dark) .admin-console {
+  color-scheme: light;
+  background-color: #f5f7f5 !important;
+  color: #17251d !important;
+}
+
+/* Main dashboard surfaces */
+html:not(.dark) .admin-console [class*="bg-[#0b1711"],
+html:not(.dark) .admin-console [class*="bg-[#101f16"],
+html:not(.dark) .admin-console [class*="bg-[#12231a"],
+html:not(.dark) .admin-console [class*="bg-[#0d1b13"],
+html:not(.dark) .admin-console [class*="bg-[#14271b"],
+html:not(.dark) .admin-console [class*="bg-[#102119"],
+html:not(.dark) .admin-console [class*="bg-[#0e1b13"] {
+  background-color: #ffffff !important;
+}
+
+/* Sidebar */
+html:not(.dark) .admin-console aside {
+  background-color: #ffffff;
+  border-color: #e2e9e3;
+}
+
+html:not(.dark) .admin-console header {
+  background-color: rgb(255 255 255 / 94%);
+  border-color: #e2e9e3;
+}
+
+/* Main text */
+html:not(.dark) .admin-console [class*="text-[#e8f1eb"],
+html:not(.dark) .admin-console [class*="text-[#edf5ef"],
+html:not(.dark) .admin-console [class*="text-[#e4eee7"],
+html:not(.dark) .admin-console [class*="text-[#d9e8dd"],
+html:not(.dark) .admin-console [class*="text-[#d8e6dc"],
+html:not(.dark) .admin-console [class*="text-[#c6d6cb"],
+html:not(.dark) .admin-console [class*="text-[#c4d4c9"],
+html:not(.dark) .admin-console [class*="text-[#c0d2c6"],
+html:not(.dark) .admin-console [class*="text-[#b9ccbf"],
+html:not(.dark) .admin-console [class*="text-[#b8cbbd"],
+html:not(.dark) .admin-console [class*="text-[#b5c7ba"],
+html:not(.dark) .admin-console [class*="text-[#a9c1b0"],
+html:not(.dark) .admin-console [class*="text-[#9db2a3"],
+html:not(.dark) .admin-console [class*="text-[#91a79a"],
+html:not(.dark) .admin-console [class*="text-[#82998b"],
+html:not(.dark) .admin-console [class*="text-[#718b7b"],
+html:not(.dark) .admin-console [class*="text-[#657c6c"] {
+  color: #52645a !important;
+}
+
+/* Headings and key text */
+html:not(.dark) .admin-console h1,
+html:not(.dark) .admin-console h2,
+html:not(.dark) .admin-console h3 {
+  color: #17251d;
+}
+
+/* Preserve the dark green hero */
+html:not(.dark) .admin-console .bg-gradient-to-br {
+  background-image: linear-gradient(
+    135deg,
+    #17452f,
+    #145238,
+    #103d2a
+  ) !important;
+}
+
+html:not(.dark) .admin-console .bg-gradient-to-br h1,
+html:not(.dark) .admin-console .bg-gradient-to-br [class*="text-white"],
+html:not(.dark) .admin-console .bg-gradient-to-br [class*="text-[#c0d5c7"] {
+  color: #ffffff !important;
+}
+
+/* Panels and report borders */
+html:not(.dark) .admin-console [class*="border-white"] {
+  border-color: #e1e8e2 !important;
+}
+
+/* Form controls */
+html:not(.dark) .admin-console input,
+html:not(.dark) .admin-console select {
+  background-color: #ffffff !important;
+  color: #17251d !important;
+  border-color: #dce5de !important;
+}
+
+html:not(.dark) .admin-console input::placeholder {
+  color: #89978e !important;
+}
+
+html:not(.dark) .admin-console option {
+  background-color: #ffffff;
+  color: #17251d;
+}
+
+/* Report cards */
+html:not(.dark) .admin-console article,
+html:not(.dark) .admin-console details {
+  color: #17251d;
+}
+
+/* Hover states */
+html:not(.dark) .admin-console button:hover {
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+/* Preserve semantic status colors */
+html:not(.dark) .admin-console [class*="text-emerald-"],
+html:not(.dark) .admin-console [class*="text-rose-"],
+html:not(.dark) .admin-console [class*="text-amber-"],
+html:not(.dark) .admin-console [class*="text-sky-"],
+html:not(.dark) .admin-console [class*="text-violet-"] {
+  /* Status and accent colors remain intact. */
+}
+

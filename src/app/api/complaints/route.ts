@@ -7,11 +7,17 @@ import { adminDb } from "@/lib/firebase/admin";
 import { verifyFirebaseToken } from "@/lib/firebase/verify-token";
 import { cloudinary } from "@/lib/cloudinary/config";
 
+const coordinatesSchema = z.object({
+  lat: z.number().min(-90).max(90),
+  lng: z.number().min(-180).max(180),
+});
+
 const complaintSchema = z.object({
   title: z.string().trim().min(5).max(120),
   description: z.string().trim().min(10).max(3000),
   language: z.enum(["en", "as"]),
   location: z.string().trim().max(200).optional().default(""),
+  coordinates: coordinatesSchema.nullable().optional(),
   image: z
     .object({
       publicId: z.string().min(1).max(500),
@@ -109,10 +115,16 @@ export async function POST(request: Request) {
       language: parsed.data.language,
       location: parsed.data.location,
 
+      // CivicMap coordinates; null when not provided
+      coordinates: parsed.data.coordinates ?? null,
+
       category: "uncategorized",
       priority: "normal",
       department: "unassigned",
       status: "submitted",
+
+      // Community voting
+      voteCount: 0,
 
       image: verifiedImage,
       aiAnalysis: null,

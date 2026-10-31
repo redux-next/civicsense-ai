@@ -1,24 +1,33 @@
+
 "use client";
 
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "@/components/ui/theme-provider";
 
-type ThemeToggleProps = { className?: string };
+type ThemeToggleProps = {
+  className?: string;
+};
 
-export default function ThemeToggle({ className = "" }: ThemeToggleProps) {
+export default function ThemeToggle({
+  className = "",
+}: ThemeToggleProps) {
   const { theme, toggleTheme } = useTheme();
-  const isDark = theme === "dark";
 
   return (
     <button
       type="button"
       onClick={toggleTheme}
-      aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
-      title={`Switch to ${isDark ? "light" : "dark"} mode`}
-      className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#e4eae4] bg-white text-[#52665a] shadow-sm transition hover:border-[#cbdccc] hover:bg-[#f2f7f2] ${className}`}
+      aria-label={
+        theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+      }
+      title={theme === "dark" ? "Light mode" : "Dark mode"}
+      className={`inline-flex h-10 w-10 items-center justify-center rounded-xl border transition-colors ${
+        theme === "dark"
+          ? "border-white/15 bg-white/10 text-yellow-300 hover:bg-white/20"
+          : "border-gray-200 bg-white text-gray-700 hover:bg-gray-100"
+      } ${className}`}
     >
-      {isDark ? <Sun size={16} /> : <Moon size={16} />}
-      <span className="sr-only">{isDark ? "Light mode" : "Dark mode"}</span>
+      {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
     </button>
   );
 }
