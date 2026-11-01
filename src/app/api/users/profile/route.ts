@@ -12,33 +12,47 @@ export async function POST(request: Request) {
     );
 
     const uid = decoded.uid;
-    const email = decoded.email ?? null;
+    const email = decoded.email?.trim().toLowerCase() ?? null;
     const displayName = decoded.name ?? "CivicSense User";
+
+    if (!email) {
+      return NextResponse.json(
+        { error: "Your Firebase account does not have an email address." },
+        { status: 403 }
+      );
+    }
+
+    // Read admin emails exclusively from the server environment.
+    const adminEmails = (process.env.CIVICSENSE_ADMIN_EMAILS ?? "")
+      .split(",")
+      .map((value) => value.trim().toLowerCase())
+      .filter(Boolean);
+
+    // Never accept admin privileges from client-provided data.
+    const role = adminEmails.includes(email) ? "admin" : "student";
 
     const userRef = adminDb.collection("users").doc(uid);
 
     await adminDb.runTransaction(async (transaction) => {
       const snapshot = await transaction.get(userRef);
 
+      const profileData = {
+        uid,
+        email,
+        displayName,
+        role,
+        updatedAt: FieldValue.serverTimestamp(),
+      };
+
       if (!snapshot.exists) {
         transaction.set(userRef, {
-          uid,
-          email,
-          displayName,
-          role: "student",
+          ...profileData,
           createdAt: FieldValue.serverTimestamp(),
-          updatedAt: FieldValue.serverTimestamp(),
         });
       } else {
-        transaction.update(userRef, {
-          email,
-          displayName,
-          updatedAt: FieldValue.serverTimestamp(),
-        });
+        transaction.update(userRef, profileData);
       }
     });
-
-    const profile = await userRef.get();
 
     return NextResponse.json({
       success: true,
@@ -46,7 +60,7 @@ export async function POST(request: Request) {
         uid,
         email,
         displayName,
-        role: profile.data()?.role ?? "student",
+        role,
       },
     });
   } catch (error) {

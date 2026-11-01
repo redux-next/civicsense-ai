@@ -1,8 +1,8 @@
-
-import { NextResponse, unstable_rethrow } from "next/server";
+import { NextResponse } from "next/server";
+import { unstable_rethrow } from "next/navigation";
 
 import { adminDb } from "@/lib/firebase/admin";
-import { verifyFirebaseToken } from "@/lib/firebase/verify-token";
+import { requireAdmin } from "@/lib/admin-auth";
 
 interface Coordinates {
   lat: number;
@@ -43,17 +43,13 @@ function toISOString(value: unknown): string | null {
 }
 
 function safeString(value: unknown, fallback: string): string {
-  if (typeof value !== "string") {
-    return fallback;
-  }
+  if (typeof value !== "string") return fallback;
 
   return value.trim().slice(0, 120) || fallback;
 }
 
 function isValidCoordinates(value: unknown): value is Coordinates {
-  if (!value || typeof value !== "object") {
-    return false;
-  }
+  if (!value || typeof value !== "object") return false;
 
   const coordinates = value as Record<string, unknown>;
 
@@ -71,10 +67,7 @@ function isValidCoordinates(value: unknown): value is Coordinates {
 
 export async function GET(request: Request) {
   try {
-    // Only authenticated users can access campus map reports.
-    await verifyFirebaseToken(
-      request.headers.get("authorization"),
-    );
+    await requireAdmin(request.headers.get("authorization"));
 
     const snapshot = await adminDb
       .collection("complaints")
@@ -85,49 +78,36 @@ export async function GET(request: Request) {
       const data = doc.data();
       const coordinates = data.coordinates;
 
-      // Do not expose reports without valid GPS coordinates.
-      if (!isValidCoordinates(coordinates)) {
-        return [];
-      }
+      if (!isValidCoordinates(coordinates)) return [];
+      if (data.status === "rejected") return [];
 
-      // Hide rejected reports from the public campus map.
-      if (data.status === "rejected") {
-        return [];
-      }
-
-      const report: MapReport = {
-        id: doc.id,
-
-        coordinates: {
-          lat: Number(coordinates.lat.toFixed(4)),
-          lng: Number(coordinates.lng.toFixed(4)),
+      return [
+        {
+          id: doc.id,
+          coordinates: {
+            lat: Number(coordinates.lat.toFixed(4)),
+            lng: Number(coordinates.lng.toFixed(4)),
+          },
+          category: safeString(data.category, "Other"),
+          priority: safeString(data.priority, "normal"),
+          department: safeString(data.department, "Unassigned"),
+          status: safeString(data.status, "submitted"),
+          location: safeString(data.location, "Campus location"),
+          voteCount:
+            typeof data.voteCount === "number" &&
+            Number.isFinite(data.voteCount)
+              ? Math.max(0, data.voteCount)
+              : 0,
+          createdAt: toISOString(data.createdAt),
         },
-
-        category: safeString(data.category, "Other"),
-        priority: safeString(data.priority, "normal"),
-        department: safeString(data.department, "Unassigned"),
-        status: safeString(data.status, "submitted"),
-        location: safeString(data.location, "Campus location"),
-
-        voteCount:
-          typeof data.voteCount === "number" &&
-          Number.isFinite(data.voteCount)
-            ? Math.max(0, data.voteCount)
-            : 0,
-
-        createdAt: toISOString(data.createdAt),
-      };
-
-      return [report];
+      ];
     });
 
-    // Newest reports first.
-    reports.sort((a, b) => {
-      return (
+    reports.sort(
+      (a, b) =>
         new Date(b.createdAt ?? 0).getTime() -
         new Date(a.createdAt ?? 0).getTime()
-      );
-    });
+    );
 
     return NextResponse.json(
       {
@@ -139,25 +119,54 @@ export async function GET(request: Request) {
         headers: {
           "Cache-Control": "private, no-store",
         },
-      },
+      }
     );
   } catch (error) {
-    // Let Next.js handle its internal prerendering signals.
+    // Preserve Next.js internal control-flow signals.
     unstable_rethrow(error);
 
-    console.error("CivicMap API error:", error);
+    const message =
+      error instanceof Error ? error.message : "";
+
+    const normalizedMessage = message.toLowerCase();
+
+    const isNotConfigured = normalizedMessage.includes(
+      "admin access is not configured"
+    );
+
+    const isForbidden =
+      normalizedMessage.includes("forbidden") ||
+      isNotConfigured;
+
+    const status = isNotConfigured
+      ? 503
+      : isForbidden
+        ? 403
+        : 401;
+
+    if (status === 401) {
+      console.warn("CivicMap authentication failed.");
+    } else if (status === 403) {
+      console.warn("CivicMap access denied.");
+    } else {
+      console.error("CivicMap API error:", message);
+    }
 
     return NextResponse.json(
       {
         success: false,
-        error: "Unable to load campus map reports.",
+        error: isNotConfigured
+          ? "Administrator access is not configured."
+          : isForbidden
+            ? "Administrator access required."
+            : "Please sign in again to continue.",
       },
       {
-        status: 500,
+        status,
         headers: {
           "Cache-Control": "private, no-store",
         },
-      },
+      }
     );
   }
 }

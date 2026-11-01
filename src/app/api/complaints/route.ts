@@ -124,7 +124,10 @@ export async function POST(request: Request) {
       status: "submitted",
 
       // Community voting
-      voteCount: 0,
+      // Community voting
+voteCount: 0,
+upvoteCount: 0,
+downvoteCount: 0,
 
       image: verifiedImage,
       aiAnalysis: null,

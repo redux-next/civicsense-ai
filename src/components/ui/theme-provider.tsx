@@ -8,6 +8,7 @@ import {
   useEffect,
   useState,
   type ReactNode,
+  Suspense,
 } from "react";
 
 type Theme = "light" | "dark";
@@ -30,7 +31,6 @@ function applyTheme(theme: Theme) {
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>("light");
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("civicsense-theme");
@@ -46,7 +46,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
     setTheme(initial);
     applyTheme(initial);
-    setMounted(true);
   }, []);
 
   const toggleTheme = useCallback(() => {
@@ -62,7 +61,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
-      {children}
+      <Suspense
+        fallback={
+          <div className="min-h-screen bg-[#f5f7f4]" />
+        }
+      >
+        {children}
+      </Suspense>
     </ThemeContext.Provider>
   );
 }

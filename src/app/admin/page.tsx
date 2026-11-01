@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -19,7 +20,6 @@ import {
   Check,
   CheckCircle2,
   ChevronDown,
-  ChevronRight,
   ClipboardList,
   Clock3,
   Filter,
@@ -46,6 +46,9 @@ type AdminComplaint = Complaint & {
   aiModel?: string;
   aiProvider?: string;
   statusUpdatedAt?: string | null;
+  upvoteCount?: number;
+  downvoteCount?: number;
+  voteCount?: number;
 };
 
 type DuplicateMatch = {
@@ -73,12 +76,8 @@ type Analysis = {
   confidence?: number;
 };
 
-type InsightItem = {
-  label: string;
-  count: number;
-};
-
 type FilterStatus = "all" | ComplaintStatus;
+type Section = "overview" | "reports";
 
 const statuses: ComplaintStatus[] = [
   "submitted",
@@ -97,16 +96,11 @@ const statusLabels: Record<ComplaintStatus, string> = {
 };
 
 const statusColors: Record<ComplaintStatus, string> = {
-  submitted:
-    "border-sky-400/20 bg-sky-400/10 text-sky-300",
-  under_review:
-    "border-amber-400/20 bg-amber-400/10 text-amber-300",
-  in_progress:
-    "border-violet-400/20 bg-violet-400/10 text-violet-300",
-  resolved:
-    "border-emerald-400/20 bg-emerald-400/10 text-emerald-300",
-  rejected:
-    "border-rose-400/20 bg-rose-400/10 text-rose-300",
+  submitted: "border-sky-400/20 bg-sky-400/10 text-sky-300",
+  under_review: "border-amber-400/20 bg-amber-400/10 text-amber-300",
+  in_progress: "border-violet-400/20 bg-violet-400/10 text-violet-300",
+  resolved: "border-emerald-400/20 bg-emerald-400/10 text-emerald-300",
+  rejected: "border-rose-400/20 bg-rose-400/10 text-rose-300",
 };
 
 const priorityColors: Record<string, string> = {
@@ -120,15 +114,12 @@ const priorityColors: Record<string, string> = {
 const panel =
   "rounded-2xl border border-white/[0.08] bg-[#12231a]";
 
-const muted = "text-[#91a79a]";
-const heading = "text-[#e8f1eb]";
-
 function getAnalysis(value: unknown): Analysis | null {
   if (!value || typeof value !== "object") return null;
   return value as Analysis;
 }
 
-function humanize(value: string | undefined) {
+function humanize(value: string | undefined | null) {
   if (!value) return "Unclassified";
 
   return value
@@ -176,14 +167,6 @@ function getRelativeDate(value: string | null | undefined) {
     day: "numeric",
     month: "short",
   });
-}
-
-function localDateKey(date: Date) {
-  return [
-    date.getFullYear(),
-    String(date.getMonth() + 1).padStart(2, "0"),
-    String(date.getDate()).padStart(2, "0"),
-  ].join("-");
 }
 
 function MetricCard({
@@ -250,65 +233,6 @@ function SectionHeading({
   );
 }
 
-function InsightBars({
-  title,
-  description,
-  items,
-}: {
-  title: string;
-  description: string;
-  items: InsightItem[];
-}) {
-  const maximum = Math.max(
-    ...items.map((item) => item.count),
-    1
-  );
-
-  return (
-    <section className={`${panel} p-4 sm:p-5`}>
-      <div className="mb-5">
-        <h3 className="text-sm font-semibold text-[#e4eee7]">
-          {title}
-        </h3>
-        <p className="mt-1 text-[11px] text-[#82998b]">
-          {description}
-        </p>
-      </div>
-
-      {items.length === 0 ? (
-        <p className="py-6 text-center text-xs text-[#82998b]">
-          No data available yet.
-        </p>
-      ) : (
-        <div className="space-y-4">
-          {items.map((item) => (
-            <div key={item.label}>
-              <div className="mb-2 flex items-center justify-between gap-3 text-xs">
-                <span className="truncate text-[#b6c8bc]">
-                  {item.label}
-                </span>
-
-                <span className="font-semibold tabular-nums text-[#e4eee7]">
-                  {item.count}
-                </span>
-              </div>
-
-              <div className="h-2 overflow-hidden rounded-full bg-[#263a2e]">
-                <div
-                  className="h-full rounded-full bg-emerald-400 transition-all duration-500"
-                  style={{
-                    width: `${(item.count / maximum) * 100}%`,
-                  }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </section>
-  );
-}
-
 function EmptyState({
   title,
   description,
@@ -339,6 +263,7 @@ export default function AdminPage() {
 
   const [complaints, setComplaints] = useState<AdminComplaint[]>([]);
   const [fetching, setFetching] = useState(true);
+
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [scanningId, setScanningId] = useState<string | null>(null);
 
@@ -352,13 +277,7 @@ export default function AdminPage() {
   const [sortOrder, setSortOrder] = useState("newest");
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState("overview");
-
-  const [currentDate, setCurrentDate] = useState<Date | null>(null);
-
-useEffect(() => {
-  setCurrentDate(new Date());
-}, []);
+  const [activeSection, setActiveSection] = useState<Section>("overview");
 
   const [duplicateResults, setDuplicateResults] = useState<
     Record<string, DuplicateMatchState>
@@ -368,8 +287,8 @@ useEffect(() => {
     Record<string, string>
   >({});
 
-
-  const loadComplaints = useCallback(async () => {
+  // Load administrator-protected complaint data.
+  const loadDashboard = useCallback(async () => {
     if (!user) return;
 
     setFetching(true);
@@ -393,13 +312,15 @@ useEffect(() => {
       }
 
       setComplaints(
-        Array.isArray(data.complaints) ? data.complaints : []
+        Array.isArray(data.complaints)
+          ? data.complaints
+          : []
       );
     } catch (err) {
       setError(
         err instanceof Error
           ? err.message
-          : "Unable to load reports."
+          : "Unable to load dashboard data."
       );
     } finally {
       setFetching(false);
@@ -414,10 +335,11 @@ useEffect(() => {
 
   useEffect(() => {
     if (!loading && user) {
-      void loadComplaints();
+      void loadDashboard();
     }
-  }, [loading, user, loadComplaints]);
+  }, [loading, user, loadDashboard]);
 
+  // Categories available for filtering.
   const categories = useMemo(
     () =>
       Array.from(
@@ -430,6 +352,7 @@ useEffect(() => {
     [complaints]
   );
 
+  // Main complaint statistics.
   const stats = useMemo(() => {
     const resolved = complaints.filter(
       (item) => item.status === "resolved"
@@ -460,6 +383,7 @@ useEffect(() => {
     };
   }, [complaints]);
 
+  // Complaint search, filters and sorting.
   const filteredComplaints = useMemo(() => {
     const query = search.trim().toLowerCase();
 
@@ -492,11 +416,13 @@ useEffect(() => {
       const dateA = a.createdAt
         ? new Date(a.createdAt).getTime()
         : 0;
+
       const dateB = b.createdAt
         ? new Date(b.createdAt).getTime()
         : 0;
 
       if (sortOrder === "oldest") return dateA - dateB;
+
       if (sortOrder === "priority") {
         const rank: Record<string, number> = {
           critical: 4,
@@ -642,7 +568,7 @@ useEffect(() => {
     }
   }
 
-  function navigateTo(section: string) {
+  function navigateTo(section: Section) {
     setActiveSection(section);
     setMobileMenuOpen(false);
 
@@ -660,24 +586,27 @@ useEffect(() => {
     setSortOrder("newest");
   }
 
-  if (loading || !user) {
-    return (
-      <main className="admin-console flex min-h-screen items-center justify-center bg-[#0b1711] text-sm text-[#9db2a3]">
-        <RefreshCw size={17} className="mr-3 animate-spin text-emerald-400" />
-        Preparing administrator workspace...
-      </main>
-    );
-  }
-
   const hasActiveFilters =
     search.trim() !== "" ||
     statusFilter !== "all" ||
     priorityFilter !== "all" ||
     categoryFilter !== "all";
 
+  if (loading || !user) {
+    return (
+      <main className="admin-console flex min-h-screen items-center justify-center bg-[#0b1711] text-sm text-[#9db2a3]">
+        <RefreshCw
+          size={17}
+          className="mr-3 animate-spin text-emerald-400"
+        />
+        Preparing administrator workspace...
+      </main>
+    );
+  }
+
   return (
     <main className="admin-console min-h-screen bg-[#0b1711] text-[#e8f1eb]">
-      {/* Mobile menu backdrop */}
+      {/* Mobile backdrop */}
       {mobileMenuOpen && (
         <button
           aria-label="Close navigation"
@@ -689,9 +618,7 @@ useEffect(() => {
       {/* Sidebar */}
       <aside
         className={`fixed inset-y-0 left-0 z-50 flex w-[265px] flex-col border-r border-white/[0.07] bg-[#101f16] transition-transform duration-300 lg:translate-x-0 ${
-          mobileMenuOpen
-            ? "translate-x-0"
-            : "-translate-x-full"
+          mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="flex h-[76px] items-center justify-between border-b border-white/[0.07] px-5">
@@ -738,6 +665,30 @@ useEffect(() => {
             </button>
 
             <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                router.push("/admin/civic-map");
+              }}
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-xs font-semibold text-[#9db2a3] transition hover:bg-white/[0.04] hover:text-white"
+            >
+              <MapPin size={17} />
+              CivicMap management
+              <ArrowUpRight size={13} className="ml-auto" />
+            </button>
+
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                router.push("/admin/community");
+              }}
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-xs font-semibold text-[#9db2a3] transition hover:bg-white/[0.04] hover:text-white"
+            >
+              <Activity size={17} />
+              Community voting
+              <ArrowUpRight size={13} className="ml-auto" />
+            </button>
+
+            <button
               onClick={() => navigateTo("reports")}
               className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-xs font-semibold transition ${
                 activeSection === "reports"
@@ -751,17 +702,18 @@ useEffect(() => {
                 {stats.total}
               </span>
             </button>
-<button
-  onClick={() => {
-    setMobileMenuOpen(false);
-    router.push("/admin/analytics");
-  }}
-  className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-xs font-semibold text-[#9db2a3] transition hover:bg-white/[0.04] hover:text-white"
->
-  <BarChart3 size={17} />
-  Campus intelligence
-  <ArrowUpRight size={13} className="ml-auto" />
-</button>
+
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                router.push("/admin/analytics");
+              }}
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-xs font-semibold text-[#9db2a3] transition hover:bg-white/[0.04] hover:text-white"
+            >
+              <BarChart3 size={17} />
+              Campus intelligence
+              <ArrowUpRight size={13} className="ml-auto" />
+            </button>
           </nav>
         </div>
 
@@ -808,9 +760,8 @@ useEffect(() => {
         </div>
       </aside>
 
-      {/* Main area */}
+      {/* Main content */}
       <div className="min-h-screen lg:pl-[265px]">
-        {/* Top navigation */}
         <header className="sticky top-0 z-30 border-b border-white/[0.07] bg-[#0b1711]/90 backdrop-blur-xl">
           <div className="flex h-[76px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
             <div className="flex min-w-0 items-center gap-3">
@@ -853,9 +804,37 @@ useEffect(() => {
           </div>
         </header>
 
-        <div className="mx-auto max-w-[1500px] space-y-8 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-          {/* Overview */}
-          <section id="overview" className="scroll-mt-24">
+        <div className="mx-auto max-w-[1500px] space-y-10 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+
+          {/* Global notifications */}
+          {error && (
+            <div
+              role="alert"
+              className="flex items-start gap-3 rounded-xl border border-rose-400/20 bg-rose-400/10 p-4 text-xs text-rose-200"
+            >
+              <AlertCircle size={16} className="mt-0.5 shrink-0" />
+              <span className="flex-1">{error}</span>
+              <button onClick={() => setError("")} aria-label="Dismiss error">
+                <X size={15} />
+              </button>
+            </div>
+          )}
+
+          {notice && (
+            <div
+              role="status"
+              className="flex items-center gap-3 rounded-xl border border-emerald-400/20 bg-emerald-400/10 p-4 text-xs text-emerald-200"
+            >
+              <Check size={16} />
+              <span className="flex-1">{notice}</span>
+              <button onClick={() => setNotice("")} aria-label="Dismiss notice">
+                <X size={15} />
+              </button>
+            </div>
+          )}
+
+          {/* OVERVIEW */}
+          <section id="overview" className="scroll-mt-24 space-y-4">
             <div className="relative overflow-hidden rounded-[26px] border border-emerald-400/10 bg-gradient-to-br from-[#183d2d] via-[#143526] to-[#10271d] p-5 sm:p-8">
               <div className="pointer-events-none absolute -right-20 -top-28 h-72 w-72 rounded-full border border-white/[0.06]" />
               <div className="pointer-events-none absolute -right-8 -top-16 h-52 w-52 rounded-full border border-white/[0.06]" />
@@ -877,14 +856,14 @@ useEffect(() => {
 
                   <p className="mt-3 max-w-xl text-xs leading-6 text-[#c0d5c7] sm:text-sm">
                     Monitor student concerns, review bilingual AI
-                    assessments, identify duplicate reports and track
-                    campus resolutions from one workspace.
+                    assessments, identify duplicate reports and manage
+                    campus issue resolution.
                   </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
                   <button
-                    onClick={() => void loadComplaints()}
+                    onClick={() => void loadDashboard()}
                     disabled={fetching}
                     className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[0.08] px-4 text-xs font-semibold text-white transition hover:bg-white/[0.14] disabled:opacity-50"
                   >
@@ -906,8 +885,7 @@ useEffect(() => {
               </div>
             </div>
 
-            {/* Statistics */}
-            <div className="mt-4 grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 xl:grid-cols-4">
               <MetricCard
                 title="Total reports"
                 value={stats.total}
@@ -941,8 +919,7 @@ useEffect(() => {
               />
             </div>
 
-            {/* Quick overview */}
-            <div className="mt-4 grid gap-3 md:grid-cols-3">
+            <div className="grid gap-3 md:grid-cols-3">
               <div className={`${panel} flex items-center gap-3 p-4`}>
                 <div className="rounded-xl bg-rose-400/10 p-2.5 text-rose-300">
                   <AlertCircle size={18} />
@@ -980,16 +957,63 @@ useEffect(() => {
                     Assamese submissions
                   </p>
                   <p className="mt-1 text-lg font-semibold text-[#e8f1eb]">
-                    {complaints.filter(
-                      (item) => item.language === "as"
-                    ).length}
+                    {complaints.filter((item) => item.language === "as").length}
                   </p>
                 </div>
               </div>
             </div>
+
+            {/* Separate management page shortcuts */}
+            <div className="grid gap-3 md:grid-cols-2">
+              <button
+                onClick={() => router.push("/admin/civic-map")}
+                className={`${panel} group flex items-center gap-4 p-5 text-left transition hover:border-emerald-400/30 hover:bg-[#172d20]`}
+              >
+                <div className="rounded-xl bg-sky-400/10 p-3 text-sky-300">
+                  <MapPin size={21} />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-[#e8f1eb]">
+                    CivicMap Management
+                  </p>
+                  <p className="mt-1 text-[11px] leading-5 text-[#82998b]">
+                    Review mapped campus reports and inspect their locations.
+                  </p>
+                </div>
+
+                <ArrowUpRight
+                  size={17}
+                  className="shrink-0 text-[#82998b] transition group-hover:text-emerald-300"
+                />
+              </button>
+
+              <button
+                onClick={() => router.push("/admin/community")}
+                className={`${panel} group flex items-center gap-4 p-5 text-left transition hover:border-emerald-400/30 hover:bg-[#172d20]`}
+              >
+                <div className="rounded-xl bg-violet-400/10 p-3 text-violet-300">
+                  <Activity size={21} />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-[#e8f1eb]">
+                    Community Voting
+                  </p>
+                  <p className="mt-1 text-[11px] leading-5 text-[#82998b]">
+                    Monitor upvotes, downvotes and community-supported reports.
+                  </p>
+                </div>
+
+                <ArrowUpRight
+                  size={17}
+                  className="shrink-0 text-[#82998b] transition group-hover:text-emerald-300"
+                />
+              </button>
+            </div>
           </section>
 
-          {/* Reports */}
+          {/* CAMPUS REPORTS */}
           <section id="reports" className="scroll-mt-24">
             <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <SectionHeading
@@ -1122,33 +1146,6 @@ useEffect(() => {
               </div>
             </div>
 
-            {/* Notifications */}
-            {error && (
-              <div
-                role="alert"
-                className="mt-4 flex items-start gap-3 rounded-xl border border-rose-400/20 bg-rose-400/10 p-4 text-xs text-rose-200"
-              >
-                <AlertCircle size={16} className="mt-0.5 shrink-0" />
-                <span className="flex-1">{error}</span>
-                <button onClick={() => setError("")} aria-label="Dismiss error">
-                  <X size={15} />
-                </button>
-              </div>
-            )}
-
-            {notice && (
-              <div
-                role="status"
-                className="mt-4 flex items-center gap-3 rounded-xl border border-emerald-400/20 bg-emerald-400/10 p-4 text-xs text-emerald-200"
-              >
-                <Check size={16} />
-                <span className="flex-1">{notice}</span>
-                <button onClick={() => setNotice("")} aria-label="Dismiss notice">
-                  <X size={15} />
-                </button>
-              </div>
-            )}
-
             <div className="mb-3 mt-5 flex items-center justify-between gap-3">
               <p className="text-xs text-[#91a79a]">
                 Showing{" "}
@@ -1168,7 +1165,10 @@ useEffect(() => {
 
             {fetching && complaints.length === 0 ? (
               <div className={`${panel} flex min-h-64 items-center justify-center text-xs text-[#91a79a]`}>
-                <RefreshCw size={16} className="mr-3 animate-spin text-emerald-400" />
+                <RefreshCw
+                  size={16}
+                  className="mr-3 animate-spin text-emerald-400"
+                />
                 Loading campus reports...
               </div>
             ) : filteredComplaints.length === 0 ? (
@@ -1199,14 +1199,20 @@ useEffect(() => {
                     >
                       <div className="p-4 sm:p-5">
                         <div className="flex flex-col gap-4 xl:flex-row xl:items-start">
-                          {/* Report content */}
+                          {/* Complaint content */}
                           <div className="min-w-0 flex-1">
                             <div className="mb-3 flex flex-wrap items-center gap-2">
-                              <span className={`rounded-full border px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide ${statusColors[status]}`}>
+                              <span
+                                className={`rounded-full border px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide ${statusColors[status]}`}
+                              >
                                 {statusLabels[status]}
                               </span>
 
-                              <span className={`rounded-full border px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide ${priorityColors[priority] || priorityColors.normal}`}>
+                              <span
+                                className={`rounded-full border px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide ${
+                                  priorityColors[priority] || priorityColors.normal
+                                }`}
+                              >
                                 {priority} priority
                               </span>
 
@@ -1281,6 +1287,7 @@ useEffect(() => {
                                   </option>
                                 ))}
                               </select>
+
                               <ChevronDown
                                 size={14}
                                 className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#82998b]"
@@ -1320,7 +1327,7 @@ useEffect(() => {
                           </div>
                         </div>
 
-                        {/* Duplicate error */}
+                        {/* Duplicate errors */}
                         {duplicateErrors[complaint.id] && (
                           <div className="mt-4 rounded-xl border border-rose-400/20 bg-rose-400/10 p-3 text-xs text-rose-200">
                             {duplicateErrors[complaint.id]}
@@ -1349,8 +1356,7 @@ useEffect(() => {
                               <div className="mt-3 grid gap-3 lg:grid-cols-2">
                                 {duplicateState.matches.map((match) => {
                                   const matchedComplaint = complaints.find(
-                                    (item) =>
-                                      item.id === match.complaintId
+                                    (item) => item.id === match.complaintId
                                   );
 
                                   return (
@@ -1392,7 +1398,7 @@ useEffect(() => {
                         )}
                       </div>
 
-                      {/* Expandable details */}
+                      {/* Complaint details and AI assessment */}
                       <details className="group border-t border-white/[0.07]">
                         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3.5 text-xs font-semibold text-[#a9c1b0] transition hover:bg-white/[0.025] sm:px-5">
                           <span className="inline-flex items-center gap-2">
@@ -1497,14 +1503,19 @@ useEffect(() => {
                                 </div>
 
                                 <p className="text-[10px] leading-5 text-[#718b7b]">
-                                  AI-generated assessment is advisory. Administrators
-                                  must verify the information before making decisions.
+                                  AI-generated assessment is advisory.
+                                  Administrators must verify the information
+                                  before making decisions.
                                 </p>
                               </div>
                             ) : (
                               <div className="rounded-xl border border-dashed border-white/10 p-5 text-center text-xs text-[#82998b]">
-                                <Sparkles size={19} className="mx-auto mb-2 text-[#718b7b]" />
-                                AI analysis has not been generated for this report yet.
+                                <Sparkles
+                                  size={19}
+                                  className="mx-auto mb-2 text-[#718b7b]"
+                                />
+                                AI analysis has not been generated for this
+                                report yet.
                               </div>
                             )}
                           </div>

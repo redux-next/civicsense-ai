@@ -1,18 +1,29 @@
-@import "tailwindcss";
 
-/* Tailwind CSS v4: use the .dark class for dark: utilities */
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+/* Tailwind CSS v4 dark variant */
 @custom-variant dark (&:where(.dark, .dark *));
+
+/* =========================================
+   1. GLOBAL THEME VARIABLES
+========================================= */
 
 :root {
   color-scheme: light;
+
   --background: #f5f7f4;
   --foreground: #20372e;
+
   --surface: #ffffff;
   --surface-secondary: #f8faf7;
+
   --border: #e2e9e2;
   --muted: #65766b;
+
   --input-background: #fafbf8;
   --input-border: #dfe7dc;
+
   --accent: #28714e;
   --accent-soft: #e7f1e2;
 }
@@ -20,14 +31,19 @@
 html.dark,
 html[data-theme="dark"] {
   color-scheme: dark;
+
   --background: #101a14;
   --foreground: #e1ebe3;
+
   --surface: #17251c;
   --surface-secondary: #14221b;
+
   --border: #304438;
   --muted: #a9b8ac;
+
   --input-background: #17251c;
   --input-border: #3a5141;
+
   --accent: #8bd9ae;
   --accent-soft: #24382b;
 }
@@ -35,9 +51,14 @@ html[data-theme="dark"] {
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
+
+/* =========================================
+   2. GLOBAL BASE STYLES
+========================================= */
 
 * {
   box-sizing: border-box;
@@ -52,12 +73,23 @@ html {
 body {
   min-height: 100vh;
   margin: 0;
+
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, "Noto Sans Bengali", sans-serif;
+
+  font-family:
+    var(--font-geist-sans),
+    Arial,
+    Helvetica,
+    "Noto Sans Bengali",
+    sans-serif;
+
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  transition: background-color 180ms ease, color 180ms ease;
+
+  transition:
+    background-color 180ms ease,
+    color 180ms ease;
 }
 
 button,
@@ -78,7 +110,7 @@ a {
   color: #173f32;
 }
 
-.dark ::selection {
+html.dark ::selection {
   background: #315b43;
   color: #ffffff;
 }
@@ -88,7 +120,10 @@ a {
   outline-offset: 2px;
 }
 
-/* Reusable surfaces */
+/* =========================================
+   3. REUSABLE THEME SURFACES
+========================================= */
+
 .theme-surface {
   background: var(--surface);
   border-color: var(--border);
@@ -100,17 +135,26 @@ a {
   color: var(--foreground);
 }
 
-/* Forms */
+/* =========================================
+   4. FORM ELEMENTS
+========================================= */
+
 .form-input {
   width: 100%;
+  padding: 0.75rem 1rem;
+
   border: 1px solid var(--input-border);
   border-radius: 0.75rem;
+
   background: var(--input-background);
-  padding: 0.75rem 1rem;
   color: var(--foreground);
+
   font-size: 0.875rem;
   outline: none;
-  transition: border-color 180ms ease, background-color 180ms ease,
+
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
     box-shadow 180ms ease;
 }
 
@@ -133,112 +177,114 @@ a {
   opacity: 0.6;
 }
 
-/* Native form controls */
 input,
 textarea,
 select {
   color: var(--foreground);
 }
 
-.dark input,
-.dark textarea,
-.dark select {
+html.dark input,
+html.dark textarea,
+html.dark select {
   color-scheme: dark;
 }
 
-/* Scrollbars */
-.dark ::-webkit-scrollbar {
+/* =========================================
+   5. SCROLLBARS
+========================================= */
+
+::-webkit-scrollbar {
   width: 9px;
   height: 9px;
 }
 
-.dark ::-webkit-scrollbar-track {
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd7cc;
+  border: 2px solid transparent;
+  border-radius: 99px;
+  background-clip: padding-box;
+}
+
+html.dark ::-webkit-scrollbar-track {
   background: #111d16;
 }
 
-.dark ::-webkit-scrollbar-thumb {
+html.dark ::-webkit-scrollbar-thumb {
   background: #3a5141;
-  border: 2px solid #111d16;
-  border-radius: 99px;
+  border-color: #111d16;
 }
 
-/* Semantic status colors */
-.dark .bg-sky-50 {
+/* =========================================
+   6. SEMANTIC STATUS COLORS — GLOBAL DARK
+========================================= */
+
+html.dark .bg-sky-50 {
   background-color: #172b3b;
 }
 
-.dark .text-sky-700 {
+html.dark .text-sky-700 {
   color: #8cc9f2;
 }
 
-.dark .border-sky-200 {
+html.dark .border-sky-200 {
   border-color: #31536a;
 }
 
-.dark .bg-amber-50 {
+html.dark .bg-amber-50 {
   background-color: #332918;
 }
 
-.dark .text-amber-700 {
+html.dark .text-amber-700 {
   color: #f2c879;
 }
 
-.dark .border-amber-200 {
+html.dark .border-amber-200 {
   border-color: #66502a;
 }
 
-.dark .bg-violet-50 {
+html.dark .bg-violet-50 {
   background-color: #29213b;
 }
 
-.dark .text-violet-700 {
+html.dark .text-violet-700 {
   color: #c7a9f4;
 }
 
-.dark .border-violet-200 {
+html.dark .border-violet-200 {
   border-color: #51406f;
 }
 
-.dark .bg-emerald-50 {
+html.dark .bg-emerald-50 {
   background-color: #183329;
 }
 
-.dark .text-emerald-700 {
+html.dark .text-emerald-700 {
   color: #8bd9ae;
 }
 
-.dark .border-emerald-200 {
+html.dark .border-emerald-200 {
   border-color: #315b43;
 }
 
-.dark .bg-rose-50 {
+html.dark .bg-rose-50 {
   background-color: #3a2024;
 }
 
-.dark .text-rose-700 {
+html.dark .text-rose-700 {
   color: #f1a0a7;
 }
 
-.dark .border-rose-200 {
+html.dark .border-rose-200 {
   border-color: #6a343c;
 }
 
-@media (prefers-reduced-motion: reduce) {
-
-  *,
-  *::before,
-  *::after {
-    scroll-behavior: auto !important;
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-
 /* =========================================
-   CIVICSENSE AI — STUDENT DASHBOARD DARK MODE
-   Compatibility layer for existing light classes
+   7. STUDENT DASHBOARD — DARK MODE
+   Compatibility with existing Tailwind classes
 ========================================= */
 
 html.dark body {
@@ -246,7 +292,8 @@ html.dark body {
   color: #e1ebe3 !important;
 }
 
-/* Main dashboard surfaces */
+/* Main surfaces */
+
 html.dark .bg-white,
 html.dark [class~="bg-white/95"],
 html.dark [class~="bg-white/90"] {
@@ -264,17 +311,13 @@ html.dark [class~="bg-[#eaf4e4]"],
 html.dark [class~="bg-[#eaf3e4]"],
 html.dark [class~="bg-[#e8f2e3]"],
 html.dark [class~="bg-[#e5f0df]"],
-html.dark [class~="bg-[#f1f4ef]"] {
-  background-color: #14221b !important;
-}
-
-/* Dashboard cards and panels */
-html.dark [class~="bg-[#f8faf6]"],
+html.dark [class~="bg-[#f1f4ef]"],
 html.dark [class~="bg-[#fafbf8]"] {
   background-color: #14221b !important;
 }
 
 /* Borders */
+
 html.dark [class~="border-[#e3e9df]"],
 html.dark [class~="border-[#e4ebe1]"],
 html.dark [class~="border-[#e2e9de]"],
@@ -282,7 +325,6 @@ html.dark [class~="border-[#e2e9df]"],
 html.dark [class~="border-[#e1e8df]"],
 html.dark [class~="border-[#e1e8dc]"],
 html.dark [class~="border-[#e4e9e1]"],
-html.dark [class~="border-[#e3e9df]"],
 html.dark [class~="border-[#edf1eb]"],
 html.dark [class~="border-[#e5ece3]"],
 html.dark [class~="border-[#e3ebdf]"],
@@ -296,9 +338,9 @@ html.dark [class~="border-[#d6e2d2]"] {
   border-color: #304438 !important;
 }
 
-/* Main text */
+/* Primary text */
+
 html.dark [class~="text-[#192b20]"],
-html.dark [class~="text-[#20392b]"],
 html.dark [class~="text-[#20392b]"],
 html.dark [class~="text-[#294534]"],
 html.dark [class~="text-[#294638]"],
@@ -312,6 +354,7 @@ html.dark [class~="text-[#53675a]"] {
 }
 
 /* Secondary text */
+
 html.dark [class~="text-[#617368]"],
 html.dark [class~="text-[#718076]"],
 html.dark [class~="text-[#718078]"],
@@ -329,12 +372,12 @@ html.dark [class~="text-[#93a096]"],
 html.dark [class~="text-[#96a198]"],
 html.dark [class~="text-[#98a299]"],
 html.dark [class~="text-[#98a399]"],
-html.dark [class~="text-[#9aa69e]"],
 html.dark [class~="text-[#9aa69e]"] {
   color: #a9b8ac !important;
 }
 
-/* Form fields */
+/* Inputs */
+
 html.dark .form-input {
   background-color: #17251c !important;
   border-color: #3a5141 !important;
@@ -349,6 +392,8 @@ html.dark .form-input:focus {
   background-color: #1b2c21 !important;
 }
 
+/* Hover surfaces */
+
 html.dark [class~="hover:bg-[#f4f8f1]"]:hover,
 html.dark [class~="hover:bg-[#f4f7f2]"]:hover,
 html.dark [class~="hover:bg-[#f8faf6]"]:hover,
@@ -357,151 +402,27 @@ html.dark [class~="hover:bg-[#e5f2dd]"]:hover {
   background-color: #24382b !important;
 }
 
-
-html.dark [class~="bg-[#edf5e8]"] {
-  background-color: #1c3022 !important;
-}
-
-html.dark [class~="bg-[#f6faf3]"] {
-  background-color: #14221b !important;
-}
+/* Preserve strong green buttons */
 
 html.dark [class~="bg-[#173f2e]"],
 html.dark [class~="bg-[#102d22]"],
 html.dark [class~="bg-[#1e5b38]"],
 html.dark [class~="bg-[#315c43]"] {
-  color: white;
+  color: #ffffff;
 }
-
-
-html.dark input,
-html.dark textarea,
-html.dark select {
-  color-scheme: dark;
-}
-
-/* Admin Page CSS */
-
 
 /* =========================================
-   ADMIN CONSOLE — LIGHT MODE
-   Dark mode retains the existing design.
+   8. ADMIN CONSOLE — LIGHT MODE
+   Scoped to .admin-console only
 ========================================= */
 
-html[data-theme="light"] .admin-console {
-  background: #f4f7f2 !important;
-  color: #20372b !important;
-}
-
-html[data-theme="light"] .admin-console aside {
-  background: #ffffff !important;
-  border-color: #e1e9df !important;
-}
-
-html[data-theme="light"] .admin-console header {
-  background: rgb(248 250 246 / 94%) !important;
-  border-color: #e1e9df !important;
-}
-
-html[data-theme="light"] .admin-console [class*="bg-[#12231a]"],
-html[data-theme="light"] .admin-console [class*="bg-[#102119]"],
-html[data-theme="light"] .admin-console [class*="bg-[#14271b]"],
-html[data-theme="light"] .admin-console [class*="bg-[#101f16]"],
-html[data-theme="light"] .admin-console [class*="bg-[#0e1b13]"] {
-  background-color: #ffffff !important;
-}
-
-html[data-theme="light"] .admin-console [class*="bg-[#0b1711]"],
-html[data-theme="light"] .admin-console [class*="bg-[#0d1b13]"] {
-  background-color: #f2f6f0 !important;
-}
-
-html[data-theme="light"] .admin-console [class*="border-white"] {
-  border-color: #e0e8df !important;
-}
-
-html[data-theme="light"] .admin-console [class*="text-white"],
-html[data-theme="light"] .admin-console [class*="text-[#e8f1eb]"],
-html[data-theme="light"] .admin-console [class*="text-[#edf5ef]"],
-html[data-theme="light"] .admin-console [class*="text-[#e4eee7]"],
-html[data-theme="light"] .admin-console [class*="text-[#d9e8dd]"],
-html[data-theme="light"] .admin-console [class*="text-[#d8e6dc]"] {
-  color: #20372b !important;
-}
-
-html[data-theme="light"] .admin-console [class*="text-[#c0d2c6]"],
-html[data-theme="light"] .admin-console [class*="text-[#c6d6cb]"],
-html[data-theme="light"] .admin-console [class*="text-[#b9ccbf]"],
-html[data-theme="light"] .admin-console [class*="text-[#b8cbbd]"],
-html[data-theme="light"] .admin-console [class*="text-[#b5c7ba]"],
-html[data-theme="light"] .admin-console [class*="text-[#a9c1b0]"],
-html[data-theme="light"] .admin-console [class*="text-[#9db2a3]"],
-html[data-theme="light"] .admin-console [class*="text-[#91a79a]"],
-html[data-theme="light"] .admin-console [class*="text-[#82998b]"],
-html[data-theme="light"] .admin-console [class*="text-[#718b7b]"],
-html[data-theme="light"] .admin-console [class*="text-[#657c6c]"] {
-  color: #647568 !important;
-}
-
-html[data-theme="light"] .admin-console input,
-html[data-theme="light"] .admin-console select,
-html[data-theme="light"] .admin-console textarea {
-  background-color: #ffffff !important;
-  color: #20372b !important;
-  border-color: #dce6db !important;
-  color-scheme: light;
-}
-
-html[data-theme="light"] .admin-console input::placeholder {
-  color: #87958a !important;
-}
-
-html[data-theme="light"] .admin-console option {
-  background: #ffffff;
-  color: #20372b;
-}
-
-html[data-theme="light"] .admin-console [class*="hover:bg-white"]:hover {
-  background-color: #edf3eb !important;
-}
-
-html[data-theme="light"] .admin-console article,
-html[data-theme="light"] .admin-console details {
-  border-color: #e0e8df;
-}
-
-/* Keep the hero visually rich in both themes */
-html[data-theme="light"] .admin-console .bg-gradient-to-br {
-  color: #ffffff !important;
-}
-
-/* Preserve status and priority colors */
-html[data-theme="light"] .admin-console [class*="text-emerald-300"],
-html[data-theme="light"] .admin-console [class*="text-emerald-400"] {
-  color: #16834a;
-}
-
-html[data-theme="light"] .admin-console [class*="text-sky-300"] {
-  color: #1476b8;
-}
-
-html[data-theme="light"] .admin-console [class*="text-amber-300"] {
-  color: #a66b08;
-}
-
-html[data-theme="light"] .admin-console [class*="text-rose-300"] {
-  color: #c13b52;
-}
-
-html[data-theme="light"] .admin-console [class*="text-violet-300"] {
-  color: #7650b7;
-}
-
-/* Admin and Analytics light theme */
 html:not(.dark) .admin-console {
+  color-scheme: light;
   background: #f4f7f2 !important;
   color: #20372b !important;
 }
+
+/* Sidebar and header */
 
 html:not(.dark) .admin-console aside {
   background: #ffffff !important;
@@ -509,56 +430,99 @@ html:not(.dark) .admin-console aside {
 }
 
 html:not(.dark) .admin-console header {
-  background: rgb(248 250 246 / 94%) !important;
+  background: rgb(248 250 246 / 96%) !important;
   border-color: #e1e9df !important;
 }
 
-html:not(.dark) .admin-console [class*="bg-[#12231a]"],
-html:not(.dark) .admin-console [class*="bg-[#102119]"],
-html:not(.dark) .admin-console [class*="bg-[#14271b]"],
-html:not(.dark) .admin-console [class*="bg-[#101f16]"],
-html:not(.dark) .admin-console [class*="bg-[#0e1b13]"] {
+/* Dark surfaces become light surfaces */
+
+html:not(.dark) .admin-console [class*="bg-[#12231a"],
+html:not(.dark) .admin-console [class*="bg-[#102119"],
+html:not(.dark) .admin-console [class*="bg-[#14271b"],
+html:not(.dark) .admin-console [class*="bg-[#101f16"],
+html:not(.dark) .admin-console [class*="bg-[#0e1b13"] {
   background-color: #ffffff !important;
 }
 
-html:not(.dark) .admin-console [class*="bg-[#0b1711]"],
-html:not(.dark) .admin-console [class*="bg-[#0d1b13]"] {
+html:not(.dark) .admin-console [class*="bg-[#0b1711"],
+html:not(.dark) .admin-console [class*="bg-[#0d1b13"] {
   background-color: #f2f6f0 !important;
 }
 
-html:not(.dark) .admin-console [class*="bg-[#263a2e]"] {
+html:not(.dark) .admin-console [class*="bg-[#263a2e"] {
   background-color: #e5ece3 !important;
 }
+
+/* Light-mode text */
+
+html:not(.dark) .admin-console [class*="text-[#e8f1eb"],
+html:not(.dark) .admin-console [class*="text-[#edf5ef"],
+html:not(.dark) .admin-console [class*="text-[#e4eee7"],
+html:not(.dark) .admin-console [class*="text-[#d9e8dd"],
+html:not(.dark) .admin-console [class*="text-[#d8e6dc"] {
+  color: #20372b !important;
+}
+
+html:not(.dark) .admin-console [class*="text-[#c0d2c6"],
+html:not(.dark) .admin-console [class*="text-[#c0d5c7"],
+html:not(.dark) .admin-console [class*="text-[#c6d6cb"],
+html:not(.dark) .admin-console [class*="text-[#c4d4c9"],
+html:not(.dark) .admin-console [class*="text-[#b9ccbf"],
+html:not(.dark) .admin-console [class*="text-[#b8cbbd"],
+html:not(.dark) .admin-console [class*="text-[#b6c8bc"],
+html:not(.dark) .admin-console [class*="text-[#b5c7ba"],
+html:not(.dark) .admin-console [class*="text-[#a9c1b0"],
+html:not(.dark) .admin-console [class*="text-[#9db2a3"],
+html:not(.dark) .admin-console [class*="text-[#91a79a"],
+html:not(.dark) .admin-console [class*="text-[#82998b"],
+html:not(.dark) .admin-console [class*="text-[#789083"],
+html:not(.dark) .admin-console [class*="text-[#718b7b"],
+html:not(.dark) .admin-console [class*="text-[#657c6c"] {
+  color: #647568 !important;
+}
+
+html:not(.dark) .admin-console h1,
+html:not(.dark) .admin-console h2,
+html:not(.dark) .admin-console h3 {
+  color: #17251d;
+}
+
+/* Preserve the dark green hero */
+
+html:not(.dark) .admin-console .bg-gradient-to-br {
+  background-image: linear-gradient(
+    135deg,
+    #17452f,
+    #145238,
+    #103d2a
+  ) !important;
+
+  color: #ffffff !important;
+}
+
+html:not(.dark) .admin-console .bg-gradient-to-br h1,
+html:not(.dark) .admin-console .bg-gradient-to-br h1 span,
+html:not(.dark) .admin-console .bg-gradient-to-br [class*="text-white"] {
+  color: #ffffff !important;
+}
+
+html:not(.dark) .admin-console .bg-gradient-to-br p {
+  color: #d6e9dc !important;
+}
+
+/* Borders */
 
 html:not(.dark) .admin-console [class*="border-white"] {
   border-color: #e0e8df !important;
 }
 
-html:not(.dark) .admin-console [class*="text-white"],
-html:not(.dark) .admin-console [class*="text-[#e8f1eb]"],
-html:not(.dark) .admin-console [class*="text-[#edf5ef]"],
-html:not(.dark) .admin-console [class*="text-[#e4eee7]"],
-html:not(.dark) .admin-console [class*="text-[#d9e8dd]"],
-html:not(.dark) .admin-console [class*="text-[#d8e6dc]"] {
-  color: #20372b !important;
+html:not(.dark) .admin-console article,
+html:not(.dark) .admin-console details {
+  border-color: #e0e8df;
+  color: #20372b;
 }
 
-html:not(.dark) .admin-console [class*="text-[#c0d2c6]"],
-html:not(.dark) .admin-console [class*="text-[#c0d5c7]"],
-html:not(.dark) .admin-console [class*="text-[#c6d6cb]"],
-html:not(.dark) .admin-console [class*="text-[#b9ccbf]"],
-html:not(.dark) .admin-console [class*="text-[#b8cbbd]"],
-html:not(.dark) .admin-console [class*="text-[#b6c8bc]"],
-html:not(.dark) .admin-console [class*="text-[#b5c7ba]"],
-html:not(.dark) .admin-console [class*="text-[#a9c1b0]"],
-html:not(.dark) .admin-console [class*="text-[#9db2a3]"],
-html:not(.dark) .admin-console [class*="text-[#91a79a]"],
-html:not(.dark) .admin-console [class*="text-[#82998b]"],
-html:not(.dark) .admin-console [class*="text-[#789083]"],
-html:not(.dark) .admin-console [class*="text-[#718b7b]"],
-html:not(.dark) .admin-console [class*="text-[#657c6c]"] {
-  color: #647568 !important;
-}
+/* Form controls */
 
 html:not(.dark) .admin-console input,
 html:not(.dark) .admin-console select,
@@ -569,7 +533,8 @@ html:not(.dark) .admin-console textarea {
   color-scheme: light;
 }
 
-html:not(.dark) .admin-console input::placeholder {
+html:not(.dark) .admin-console input::placeholder,
+html:not(.dark) .admin-console textarea::placeholder {
   color: #87958a !important;
 }
 
@@ -577,6 +542,8 @@ html:not(.dark) .admin-console option {
   background: #ffffff;
   color: #20372b;
 }
+
+/* Hover states */
 
 html:not(.dark) .admin-console [class*="hover:bg-white"]:hover {
   background-color: #edf3eb !important;
@@ -586,21 +553,8 @@ html:not(.dark) .admin-console [class*="hover:text-white"]:hover {
   color: #20372b !important;
 }
 
-/* Keep the hero gradient and its text rich in both themes */
-html:not(.dark) .admin-console .bg-gradient-to-br {
-  color: #ffffff !important;
-}
+/* Preserve status colors */
 
-html:not(.dark) .admin-console .bg-gradient-to-br h1,
-html:not(.dark) .admin-console .bg-gradient-to-br h1 span {
-  color: #ffffff !important;
-}
-
-html:not(.dark) .admin-console .bg-gradient-to-br p {
-  color: #d6e9dc !important;
-}
-
-/* Preserve semantic colors */
 html:not(.dark) .admin-console [class*="text-emerald-300"],
 html:not(.dark) .admin-console [class*="text-emerald-400"] {
   color: #16834a;
@@ -622,18 +576,206 @@ html:not(.dark) .admin-console [class*="text-violet-300"] {
   color: #7650b7;
 }
 
+/* =========================================
+   9. CIVICMAP — BASE LIGHT THEME
+   Independent from the global theme
+========================================= */
 
-/* CivicMap */
-@import "leaflet/dist/leaflet.css";
+.civic-map-page {
+  --cm-bg: #f5f8f3;
+  --cm-card: #ffffff;
+  --cm-card-soft: #f8faf7;
+
+  --cm-text: #294534;
+  --cm-heading: #34513c;
+  --cm-muted: #829084;
+
+  --cm-border: #e0e8df;
+  --cm-input: #fbfcfa;
+
+  --cm-accent: #205a39;
+  --cm-accent-soft: #edf5e9;
+
+  --cm-shadow: 0 4px 18px rgba(34, 67, 43, 0.045);
+
+  min-height: 100vh;
+  background: var(--cm-bg);
+  color: var(--cm-text);
+
+  transition:
+    background-color 250ms ease,
+    color 250ms ease;
+}
+
+/* =========================================
+   10. CIVICMAP — INDEPENDENT DARK THEME
+========================================= */
+
+.civic-map-page.dark {
+  color-scheme: dark;
+
+  --cm-bg: #101a14;
+  --cm-card: #19271f;
+  --cm-card-soft: #202f25;
+
+  --cm-text: #dce9df;
+  --cm-heading: #e5f0e6;
+  --cm-muted: #9aafa0;
+
+  --cm-border: #304638;
+  --cm-input: #17251c;
+
+  --cm-accent: #8bc98a;
+  --cm-accent-soft: #243b2a;
+
+  --cm-shadow: 0 4px 20px rgba(0, 0, 0, 0.16);
+
+  background: var(--cm-bg) !important;
+  color: var(--cm-text) !important;
+}
+
+/* CivicMap header */
+
+.civic-map-page header {
+  background: var(--cm-card);
+  border-color: var(--cm-border);
+  transition:
+    background-color 250ms ease,
+    border-color 250ms ease;
+}
+
+.civic-map-page header p,
+.civic-map-page header span {
+  color: var(--cm-muted);
+}
+
+.civic-map-page.dark header {
+  background: #16241b !important;
+  border-color: var(--cm-border) !important;
+}
+
+.civic-map-page.dark header h1,
+.civic-map-page.dark header h2 {
+  color: var(--cm-heading);
+}
+
+/* Main surfaces */
+
+.civic-map-page.dark .bg-white {
+  background-color: var(--cm-card) !important;
+}
+
+.civic-map-page.dark .bg-\[\#fbfcfa\],
+.civic-map-page.dark .bg-\[\#f8faf7\],
+.civic-map-page.dark .bg-\[\#f4f7f2\] {
+  background-color: var(--cm-card-soft) !important;
+}
+
+/* Borders */
+
+.civic-map-page.dark .border-\[\#e0e8df\],
+.civic-map-page.dark .border-\[\#e1e9dd\],
+.civic-map-page.dark .border-\[\#e2e9e1\],
+.civic-map-page.dark .border-\[\#e9eee7\],
+.civic-map-page.dark .border-\[\#edf1eb\] {
+  border-color: var(--cm-border) !important;
+}
+
+/* Typography */
+
+.civic-map-page.dark .text-\[\#294534\],
+.civic-map-page.dark .text-\[\#34513c\],
+.civic-map-page.dark .text-\[\#526b58\],
+.civic-map-page.dark .text-\[\#49634f\],
+.civic-map-page.dark .text-\[\#536b58\] {
+  color: var(--cm-heading) !important;
+}
+
+.civic-map-page.dark .text-\[\#687b6c\],
+.civic-map-page.dark .text-\[\#77877b\],
+.civic-map-page.dark .text-\[\#829084\],
+.civic-map-page.dark .text-\[\#839185\],
+.civic-map-page.dark .text-\[\#8a988c\],
+.civic-map-page.dark .text-\[\#89978b\],
+.civic-map-page.dark .text-\[\#91a092\],
+.civic-map-page.dark .text-\[\#929e94\],
+.civic-map-page.dark .text-\[\#93a093\],
+.civic-map-page.dark .text-\[\#9aa59b\] {
+  color: var(--cm-muted) !important;
+}
+
+/* Inputs and selects */
+
+.civic-map-page.dark input,
+.civic-map-page.dark select,
+.civic-map-page.dark textarea {
+  background-color: var(--cm-input) !important;
+  color: var(--cm-text) !important;
+  border-color: #405645 !important;
+  color-scheme: dark;
+}
+
+.civic-map-page.dark input::placeholder,
+.civic-map-page.dark textarea::placeholder {
+  color: var(--cm-muted) !important;
+}
+
+/* Hover states */
+
+.civic-map-page.dark .hover\:bg-white:hover {
+  background-color: #26392b !important;
+}
+
+.civic-map-page.dark .hover\:bg-\[\#f1f5ef\]:hover,
+.civic-map-page.dark .hover\:bg-\[\#f0f6ed\]:hover {
+  background-color: #2a3e30 !important;
+}
+
+/* CivicMap cards and buttons */
+
+.civic-map-page.dark button.border-\[\#e1e9dd\],
+.civic-map-page.dark button.border-\[\#e0e8df\] {
+  background-color: var(--cm-card) !important;
+  border-color: var(--cm-border) !important;
+}
+
+.civic-map-page.dark button:hover {
+  border-color: #64896b;
+}
+
+/* Footer */
+
+.civic-map-page footer {
+  border-color: var(--cm-border);
+  color: var(--cm-muted);
+}
+
+/* =========================================
+   11. CIVICMAP — LEAFLET MAP
+========================================= */
 
 .civic-map-container {
   z-index: 1;
-  background: #eaf0e6;
+  background: #e9eee7;
+}
+
+.civic-map-container .leaflet-control-zoom a,
+.civic-map-container .leaflet-bar a {
+  color: #31583b;
+}
+
+.civic-map-container .leaflet-popup-content-wrapper {
+  border-radius: 12px;
+}
+
+.civic-map-container .leaflet-popup-content {
+  margin: 12px 14px;
+  min-width: 150px;
 }
 
 .civic-map-popup {
   min-width: 170px;
-  color: #294534;
+  color: #304b37;
   font-family: Arial, sans-serif;
   font-size: 12px;
   line-height: 1.6;
@@ -641,9 +783,9 @@ html:not(.dark) .admin-console [class*="text-violet-300"] {
 
 .civic-map-popup-title {
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 5px;
   color: #1e5938;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 800;
   text-transform: capitalize;
 }
@@ -652,123 +794,493 @@ html:not(.dark) .admin-console [class*="text-violet-300"] {
   margin: 3px 0;
 }
 
+/* Leaflet dark mode */
 
-/* ============================================
-   CIVICSENSE AI — ADMIN LIGHT THEME
-   Dark mode retains the existing design.
-   ============================================ */
-
-html:not(.dark) .admin-console {
-  color-scheme: light;
-  background-color: #f5f7f5 !important;
-  color: #17251d !important;
+.civic-map-page.dark .civic-map-container {
+  background: #202f25 !important;
 }
 
-/* Main dashboard surfaces */
-html:not(.dark) .admin-console [class*="bg-[#0b1711"],
-html:not(.dark) .admin-console [class*="bg-[#101f16"],
-html:not(.dark) .admin-console [class*="bg-[#12231a"],
-html:not(.dark) .admin-console [class*="bg-[#0d1b13"],
-html:not(.dark) .admin-console [class*="bg-[#14271b"],
-html:not(.dark) .admin-console [class*="bg-[#102119"],
-html:not(.dark) .admin-console [class*="bg-[#0e1b13"] {
-  background-color: #ffffff !important;
+.civic-map-page.dark .leaflet-control-zoom a,
+.civic-map-page.dark .leaflet-bar a {
+  background: #19271e !important;
+  color: #d8e9da !important;
+  border-color: #405645 !important;
 }
 
-/* Sidebar */
-html:not(.dark) .admin-console aside {
-  background-color: #ffffff;
-  border-color: #e2e9e3;
-}
-
-html:not(.dark) .admin-console header {
-  background-color: rgb(255 255 255 / 94%);
-  border-color: #e2e9e3;
-}
-
-/* Main text */
-html:not(.dark) .admin-console [class*="text-[#e8f1eb"],
-html:not(.dark) .admin-console [class*="text-[#edf5ef"],
-html:not(.dark) .admin-console [class*="text-[#e4eee7"],
-html:not(.dark) .admin-console [class*="text-[#d9e8dd"],
-html:not(.dark) .admin-console [class*="text-[#d8e6dc"],
-html:not(.dark) .admin-console [class*="text-[#c6d6cb"],
-html:not(.dark) .admin-console [class*="text-[#c4d4c9"],
-html:not(.dark) .admin-console [class*="text-[#c0d2c6"],
-html:not(.dark) .admin-console [class*="text-[#b9ccbf"],
-html:not(.dark) .admin-console [class*="text-[#b8cbbd"],
-html:not(.dark) .admin-console [class*="text-[#b5c7ba"],
-html:not(.dark) .admin-console [class*="text-[#a9c1b0"],
-html:not(.dark) .admin-console [class*="text-[#9db2a3"],
-html:not(.dark) .admin-console [class*="text-[#91a79a"],
-html:not(.dark) .admin-console [class*="text-[#82998b"],
-html:not(.dark) .admin-console [class*="text-[#718b7b"],
-html:not(.dark) .admin-console [class*="text-[#657c6c"] {
-  color: #52645a !important;
-}
-
-/* Headings and key text */
-html:not(.dark) .admin-console h1,
-html:not(.dark) .admin-console h2,
-html:not(.dark) .admin-console h3 {
-  color: #17251d;
-}
-
-/* Preserve the dark green hero */
-html:not(.dark) .admin-console .bg-gradient-to-br {
-  background-image: linear-gradient(
-    135deg,
-    #17452f,
-    #145238,
-    #103d2a
-  ) !important;
-}
-
-html:not(.dark) .admin-console .bg-gradient-to-br h1,
-html:not(.dark) .admin-console .bg-gradient-to-br [class*="text-white"],
-html:not(.dark) .admin-console .bg-gradient-to-br [class*="text-[#c0d5c7"] {
+.civic-map-page.dark .leaflet-control-zoom a:hover,
+.civic-map-page.dark .leaflet-bar a:hover {
+  background: #26392b !important;
   color: #ffffff !important;
 }
 
-/* Panels and report borders */
-html:not(.dark) .admin-console [class*="border-white"] {
-  border-color: #e1e8e2 !important;
+.civic-map-page.dark .leaflet-popup-content-wrapper,
+.civic-map-page.dark .leaflet-popup-tip {
+  background: #19271e !important;
+  color: #e2eee4 !important;
 }
 
-/* Form controls */
-html:not(.dark) .admin-console input,
-html:not(.dark) .admin-console select {
-  background-color: #ffffff !important;
-  color: #17251d !important;
-  border-color: #dce5de !important;
+.civic-map-page.dark .civic-map-popup {
+  color: #d8e9da !important;
 }
 
-html:not(.dark) .admin-console input::placeholder {
-  color: #89978e !important;
+.civic-map-page.dark .civic-map-popup-title {
+  color: #a8d5a7 !important;
 }
 
-html:not(.dark) .admin-console option {
+/* =========================================
+   12. ACCESSIBILITY
+========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+
+/* ============================================
+   CIVICMAP — REFINED LIGHT THEME
+   Scoped exclusively to CivicMap.
+   Existing dark theme remains unchanged.
+============================================ */
+
+.civic-map-page:not(.dark) {
+  color-scheme: light;
+
+  --cm-bg: #f3f6f1;
+  --cm-card: #ffffff;
+  --cm-card-soft: #f8faf7;
+
+  --cm-heading: #183b29;
+  --cm-text: #344f3d;
+  --cm-muted: #718276;
+
+  --cm-border: #e1e9df;
+  --cm-input: #ffffff;
+
+  --cm-accent: #247044;
+  --cm-accent-hover: #195c36;
+  --cm-accent-soft: #eaf4e9;
+
+  --cm-shadow: 0 3px 14px rgba(32, 61, 39, 0.055);
+
+  background: var(--cm-bg) !important;
+  color: var(--cm-text);
+}
+
+/* Page background */
+
+.civic-map-page:not(.dark) {
+  background-color: var(--cm-bg) !important;
+}
+
+/* Header */
+
+.civic-map-page:not(.dark) header {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-color: var(--cm-border) !important;
+  box-shadow: 0 2px 12px rgba(30, 60, 38, 0.035);
+}
+
+.civic-map-page:not(.dark) header h1,
+.civic-map-page:not(.dark) header h2 {
+  color: var(--cm-heading) !important;
+}
+
+.civic-map-page:not(.dark) header p,
+.civic-map-page:not(.dark) header span {
+  color: var(--cm-muted);
+}
+
+/* Cards and panels */
+
+.civic-map-page:not(.dark) .bg-white {
+  background-color: var(--cm-card) !important;
+}
+
+.civic-map-page:not(.dark) .bg-\[\#fbfcfa\],
+.civic-map-page:not(.dark) .bg-\[\#f8faf7\],
+.civic-map-page:not(.dark) .bg-\[\#f4f7f2\] {
+  background-color: var(--cm-card-soft) !important;
+}
+
+/* Card depth */
+
+.civic-map-page:not(.dark) article,
+.civic-map-page:not(.dark) section {
+  border-color: var(--cm-border);
+}
+
+.civic-map-page:not(.dark) .shadow-sm {
+  box-shadow: var(--cm-shadow);
+}
+
+/* Typography */
+
+.civic-map-page:not(.dark) .text-\[\#294534\],
+.civic-map-page:not(.dark) .text-\[\#34513c\],
+.civic-map-page:not(.dark) .text-\[\#526b58\],
+.civic-map-page:not(.dark) .text-\[\#49634f\],
+.civic-map-page:not(.dark) .text-\[\#536b58\] {
+  color: var(--cm-heading) !important;
+}
+
+.civic-map-page:not(.dark) .text-\[\#687b6c\],
+.civic-map-page:not(.dark) .text-\[\#77877b\],
+.civic-map-page:not(.dark) .text-\[\#829084\],
+.civic-map-page:not(.dark) .text-\[\#839185\],
+.civic-map-page:not(.dark) .text-\[\#8a988c\],
+.civic-map-page:not(.dark) .text-\[\#89978b\],
+.civic-map-page:not(.dark) .text-\[\#91a092\],
+.civic-map-page:not(.dark) .text-\[\#929e94\],
+.civic-map-page:not(.dark) .text-\[\#93a093\],
+.civic-map-page:not(.dark) .text-\[\#9aa59b\] {
+  color: var(--cm-muted) !important;
+}
+
+/* Borders */
+
+.civic-map-page:not(.dark) .border-\[\#e0e8df\],
+.civic-map-page:not(.dark) .border-\[\#e1e9dd\],
+.civic-map-page:not(.dark) .border-\[\#e2e9e1\],
+.civic-map-page:not(.dark) .border-\[\#e9eee7\],
+.civic-map-page:not(.dark) .border-\[\#edf1eb\] {
+  border-color: var(--cm-border) !important;
+}
+
+/* Inputs and search */
+
+.civic-map-page:not(.dark) input,
+.civic-map-page:not(.dark) select,
+.civic-map-page:not(.dark) textarea {
+  background: var(--cm-input) !important;
+  color: var(--cm-heading) !important;
+  border-color: #dce6da !important;
+  color-scheme: light;
+}
+
+.civic-map-page:not(.dark) input::placeholder,
+.civic-map-page:not(.dark) textarea::placeholder {
+  color: #98a498 !important;
+}
+
+.civic-map-page:not(.dark) input:focus,
+.civic-map-page:not(.dark) select:focus,
+.civic-map-page:not(.dark) textarea:focus {
+  border-color: #6b9c73 !important;
+  box-shadow: 0 0 0 3px rgba(91, 151, 99, 0.13);
+  outline: none;
+}
+
+/* Buttons and interactive controls */
+
+.civic-map-page:not(.dark) .hover\:bg-white:hover {
+  background-color: #f0f5ef !important;
+}
+
+.civic-map-page:not(.dark) .hover\:bg-\[\#f1f5ef\]:hover,
+.civic-map-page:not(.dark) .hover\:bg-\[\#f0f6ed\]:hover {
+  background-color: #eaf2e8 !important;
+}
+
+.civic-map-page:not(.dark) button.border-\[\#e1e9dd\],
+.civic-map-page:not(.dark) button.border-\[\#e0e8df\] {
   background-color: #ffffff;
-  color: #17251d;
+  border-color: var(--cm-border) !important;
+  color: var(--cm-text);
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
 }
 
-/* Report cards */
-html:not(.dark) .admin-console article,
-html:not(.dark) .admin-console details {
-  color: #17251d;
+.civic-map-page:not(.dark) button.border-\[\#e1e9dd\]:hover,
+.civic-map-page:not(.dark) button.border-\[\#e0e8df\]:hover {
+  background-color: #f5f9f3 !important;
+  border-color: #b8cdb8 !important;
 }
 
-/* Hover states */
-html:not(.dark) .admin-console button:hover {
-  transition: background-color 180ms ease, color 180ms ease;
+/* Keep strong accent buttons green */
+
+.civic-map-page:not(.dark) .bg-\[\#173f2e\],
+.civic-map-page:not(.dark) .bg-\[\#102d22\],
+.civic-map-page:not(.dark) .bg-\[\#1e5b38\],
+.civic-map-page:not(.dark) .bg-\[\#315c43\] {
+  color: #ffffff !important;
 }
 
-/* Preserve semantic status colors */
-html:not(.dark) .admin-console [class*="text-emerald-"],
-html:not(.dark) .admin-console [class*="text-rose-"],
-html:not(.dark) .admin-console [class*="text-amber-"],
-html:not(.dark) .admin-console [class*="text-sky-"],
-html:not(.dark) .admin-console [class*="text-violet-"] {
-  /* Status and accent colors remain intact. */
+/* Map container */
+
+.civic-map-page:not(.dark) .civic-map-container {
+  background: #e9eee7 !important;
+  border-color: var(--cm-border);
 }
 
+/* Leaflet zoom controls */
+
+.civic-map-page:not(.dark) .leaflet-control-zoom a,
+.civic-map-page:not(.dark) .leaflet-bar a {
+  background: #ffffff !important;
+  color: #28583a !important;
+  border-color: #dce6da !important;
+}
+
+.civic-map-page:not(.dark) .leaflet-control-zoom a:hover,
+.civic-map-page:not(.dark) .leaflet-bar a:hover {
+  background: #edf5eb !important;
+  color: #17472c !important;
+}
+
+/* Leaflet popups */
+
+.civic-map-page:not(.dark) .leaflet-popup-content-wrapper,
+.civic-map-page:not(.dark) .leaflet-popup-tip {
+  background: #ffffff !important;
+  color: #344f3d !important;
+}
+
+.civic-map-page:not(.dark) .civic-map-popup {
+  color: #344f3d !important;
+}
+
+.civic-map-page:not(.dark) .civic-map-popup-title {
+  color: #1e5938 !important;
+}
+
+/* Footer */
+
+.civic-map-page:not(.dark) footer {
+  border-color: var(--cm-border) !important;
+  color: var(--cm-muted) !important;
+}
+
+/* Smooth transitions */
+
+.civic-map-page:not(.dark) button,
+.civic-map-page:not(.dark) article,
+.civic-map-page:not(.dark) input,
+.civic-map-page:not(.dark) select {
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
+}
+
+
+/* =====================================================
+   CIVICMAP — LIGHT MODE ONLY
+   Does not affect CivicMap dark mode or other pages.
+===================================================== */
+
+.civic-map-page[data-theme="light"] {
+  color-scheme: light;
+
+  --cm-page: #f4f7f3;
+  --cm-surface: #ffffff;
+  --cm-surface-soft: #f8faf7;
+  --cm-surface-hover: #edf4ec;
+
+  --cm-heading: #203d2c;
+  --cm-text: #405849;
+  --cm-muted: #78897d;
+
+  --cm-border: #e2e9e0;
+  --cm-accent: #286b43;
+  --cm-accent-hover: #1e5636;
+
+  --cm-shadow: 0 4px 18px rgba(32, 61, 39, 0.055);
+
+  background: var(--cm-page) !important;
+  color: var(--cm-text);
+}
+
+/* Main page background */
+.civic-map-page[data-theme="light"] {
+  background-color: var(--cm-page) !important;
+}
+
+/* Header */
+.civic-map-page[data-theme="light"] > header {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-color: var(--cm-border) !important;
+  box-shadow: 0 2px 12px rgba(32, 61, 39, 0.04);
+}
+
+/* White cards and panels */
+.civic-map-page[data-theme="light"] .bg-white {
+  background-color: var(--cm-surface) !important;
+}
+
+.civic-map-page[data-theme="light"] .bg-white\/95 {
+  background-color: rgba(255, 255, 255, 0.97) !important;
+}
+
+.civic-map-page[data-theme="light"] .bg-white\/10 {
+  background-color: rgba(255, 255, 255, 0.10) !important;
+}
+
+/* Soft backgrounds */
+.civic-map-page[data-theme="light"] .bg-\[\#fbfcfa\],
+.civic-map-page[data-theme="light"] .bg-\[\#f8faf7\],
+.civic-map-page[data-theme="light"] .bg-\[\#f4f7f2\],
+.civic-map-page[data-theme="light"] .bg-\[\#f1f5ef\],
+.civic-map-page[data-theme="light"] .bg-\[\#eff5ec\],
+.civic-map-page[data-theme="light"] .bg-\[\#edf2eb\] {
+  background-color: var(--cm-surface-soft) !important;
+}
+
+/* Headings */
+.civic-map-page[data-theme="light"] .text-\[\#244431\],
+.civic-map-page[data-theme="light"] .text-\[\#294534\],
+.civic-map-page[data-theme="light"] .text-\[\#34513c\],
+.civic-map-page[data-theme="light"] .text-\[\#365740\],
+.civic-map-page[data-theme="light"] .text-\[\#3c5944\],
+.civic-map-page[data-theme="light"] .text-\[\#49634f\],
+.civic-map-page[data-theme="light"] .text-\[\#526b58\],
+.civic-map-page[data-theme="light"] .text-\[\#536b58\] {
+  color: var(--cm-heading) !important;
+}
+
+/* Supporting text */
+.civic-map-page[data-theme="light"] .text-\[\#62796a\],
+.civic-map-page[data-theme="light"] .text-\[\#64806b\],
+.civic-map-page[data-theme="light"] .text-\[\#64816a\],
+.civic-map-page[data-theme="light"] .text-\[\#687b6c\],
+.civic-map-page[data-theme="light"] .text-\[\#708171\],
+.civic-map-page[data-theme="light"] .text-\[\#77877b\],
+.civic-map-page[data-theme="light"] .text-\[\#7c8c7e\],
+.civic-map-page[data-theme="light"] .text-\[\#7d8c80\],
+.civic-map-page[data-theme="light"] .text-\[\#78877b\],
+.civic-map-page[data-theme="light"] .text-\[\#829084\],
+.civic-map-page[data-theme="light"] .text-\[\#839185\],
+.civic-map-page[data-theme="light"] .text-\[\#849587\],
+.civic-map-page[data-theme="light"] .text-\[\#87958a\],
+.civic-map-page[data-theme="light"] .text-\[\#89978b\],
+.civic-map-page[data-theme="light"] .text-\[\#8a988c\],
+.civic-map-page[data-theme="light"] .text-\[\#8b998e\],
+.civic-map-page[data-theme="light"] .text-\[\#91a092\],
+.civic-map-page[data-theme="light"] .text-\[\#929e94\],
+.civic-map-page[data-theme="light"] .text-\[\#93a093\],
+.civic-map-page[data-theme="light"] .text-\[\#9aa59b\],
+.civic-map-page[data-theme="light"] .text-\[\#a0aaa1\] {
+  color: var(--cm-muted) !important;
+}
+
+/* Green accent text */
+.civic-map-page[data-theme="light"] .text-\[\#367348\],
+.civic-map-page[data-theme="light"] .text-\[\#4d7854\],
+.civic-map-page[data-theme="light"] .text-\[\#52735a\],
+.civic-map-page[data-theme="light"] .text-\[\#6aaa52\],
+.civic-map-page[data-theme="light"] .text-\[\#709174\],
+.civic-map-page[data-theme="light"] .text-\[\#739277\],
+.civic-map-page[data-theme="light"] .text-\[\#769477\],
+.civic-map-page[data-theme="light"] .text-\[\#83a17e\] {
+  color: var(--cm-accent) !important;
+}
+
+/* Borders */
+.civic-map-page[data-theme="light"] .border-\[\#dce7dc\],
+.civic-map-page[data-theme="light"] .border-\[\#dfe8dd\],
+.civic-map-page[data-theme="light"] .border-\[\#dfe9dc\],
+.civic-map-page[data-theme="light"] .border-\[\#e0e8df\],
+.civic-map-page[data-theme="light"] .border-\[\#e0e9dc\],
+.civic-map-page[data-theme="light"] .border-\[\#e1e9dd\],
+.civic-map-page[data-theme="light"] .border-\[\#e2e9e1\],
+.civic-map-page[data-theme="light"] .border-\[\#e2e9e1\],
+.civic-map-page[data-theme="light"] .border-\[\#e9eee7\],
+.civic-map-page[data-theme="light"] .border-\[\#edf1eb\] {
+  border-color: var(--cm-border) !important;
+}
+
+/* Cards */
+.civic-map-page[data-theme="light"] .shadow-sm {
+  box-shadow: var(--cm-shadow) !important;
+}
+
+/* Inputs and dropdowns */
+.civic-map-page[data-theme="light"] input,
+.civic-map-page[data-theme="light"] select,
+.civic-map-page[data-theme="light"] textarea {
+  color-scheme: light;
+  background-color: #ffffff !important;
+  color: #294534 !important;
+  border-color: #dce6da !important;
+}
+
+.civic-map-page[data-theme="light"] input::placeholder,
+.civic-map-page[data-theme="light"] textarea::placeholder {
+  color: #98a498 !important;
+  opacity: 1;
+}
+
+.civic-map-page[data-theme="light"] input:focus,
+.civic-map-page[data-theme="light"] select:focus,
+.civic-map-page[data-theme="light"] textarea:focus {
+  border-color: #75a77a !important;
+  box-shadow: 0 0 0 3px rgba(75, 130, 83, 0.12);
+  outline: none;
+}
+
+/* Filter controls */
+.civic-map-page[data-theme="light"] button:hover {
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+
+.civic-map-page[data-theme="light"] .hover\:bg-white:hover {
+  background-color: #edf4ec !important;
+}
+
+.civic-map-page[data-theme="light"] .hover\:bg-\[\#f1f5ef\]:hover,
+.civic-map-page[data-theme="light"] .hover\:bg-\[\#f0f6ed\]:hover {
+  background-color: #eaf2e8 !important;
+}
+
+/* Map panel */
+.civic-map-page[data-theme="light"] .civic-map-container {
+  background: #e8eee6 !important;
+}
+
+/* Leaflet controls */
+.civic-map-page[data-theme="light"] .leaflet-bar a,
+.civic-map-page[data-theme="light"] .leaflet-control-zoom a {
+  background-color: #ffffff !important;
+  color: #28583a !important;
+  border-color: #dce6da !important;
+}
+
+.civic-map-page[data-theme="light"] .leaflet-bar a:hover,
+.civic-map-page[data-theme="light"] .leaflet-control-zoom a:hover {
+  background-color: #edf4ec !important;
+  color: #17472c !important;
+}
+
+/* Map popups */
+.civic-map-page[data-theme="light"] .leaflet-popup-content-wrapper,
+.civic-map-page[data-theme="light"] .leaflet-popup-tip {
+  background-color: #ffffff !important;
+  color: #405849 !important;
+  box-shadow: 0 4px 18px rgba(25, 55, 34, 0.12);
+}
+
+.civic-map-page[data-theme="light"] .civic-map-popup {
+  color: #405849 !important;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.civic-map-page[data-theme="light"] .civic-map-popup-title {
+  color: #203d2c !important;
+}
+
+/* Footer */
+.civic-map-page[data-theme="light"] footer {
+  border-color: var(--cm-border) !important;
+}
+
+/* Keep the existing dark theme entirely separate. */

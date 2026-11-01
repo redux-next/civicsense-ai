@@ -12,14 +12,17 @@ import {
   ClipboardList,
   Clock3,
   Languages,
+  MapPinned,
   Menu,
   RefreshCw,
   ShieldCheck,
   TrendingUp,
   Users,
+  Vote,
   X,
   AlertTriangle,
   LogOut,
+  MapPin,
 } from "lucide-react";
 
 import { auth } from "@/lib/firebase/client";
@@ -27,7 +30,38 @@ import { useAuth } from "@/components/auth/auth-provider";
 import ThemeToggle from "@/components/ui/theme-toggle";
 import type { Complaint } from "@/types/complaint";
 
-type AdminComplaint = Complaint;
+// type AdminComplaint = Complaint;
+
+type DuplicateMatch = {
+  complaintId: string;
+  similarity: number;
+  reasonEnglish: string;
+  reasonAssamese: string;
+};
+
+type AdminComplaint = Complaint & {
+  possibleDuplicates?: DuplicateMatch[];
+  duplicateScanAt?: string | null;
+};
+
+type RecurringIssue = {
+  id: string;
+  complaints: AdminComplaint[];
+  averageSimilarity: number;
+  reasons: string[];
+  reasonsAssamese: string[];
+};
+
+type CampusHotspot = {
+  id: string;
+  reports: AdminComplaint[];
+  latitude: number;
+  longitude: number;
+  unresolvedCount: number;
+  highPriorityCount: number;
+  categories: { label: string; count: number }[];
+  location: string;
+};
 
 type InsightItem = {
   label: string;
@@ -347,6 +381,260 @@ export default function CampusIntelligencePage() {
     };
   }, [complaints, currentDate]);
 
+  const recurringIssues = useMemo<RecurringIssue[]>(() => {
+  const complaintMap = new Map(
+    complaints.map((complaint) => [complaint.id, complaint])
+  );
+
+  // Store each relationship only once, regardless of direction.
+  const edges = new Map<
+    string,
+    {
+      firstId: string;
+      secondId: string;
+      similarity: number;
+      reasonEnglish: string;
+      reasonAssamese: string;
+    }
+  >();
+
+  for (const complaint of complaints) {
+    for (const match of complaint.possibleDuplicates || []) {
+      if (!complaintMap.has(match.complaintId)) continue;
+      if (match.complaintId === complaint.id) continue;
+
+      const [firstId, secondId] = [
+        complaint.id,
+        match.complaintId,
+      ].sort();
+
+      const key = `${firstId}:${secondId}`;
+      const existing = edges.get(key);
+
+      if (!existing || match.similarity > existing.similarity) {
+        edges.set(key, {
+          firstId,
+          secondId,
+          similarity: match.similarity,
+          reasonEnglish: match.reasonEnglish,
+          reasonAssamese: match.reasonAssamese,
+        });
+      }
+    }
+  }
+
+  // Build an undirected graph of related complaints.
+  const adjacency = new Map<string, Set<string>>();
+
+  for (const edge of edges.values()) {
+    if (!adjacency.has(edge.firstId)) {
+      adjacency.set(edge.firstId, new Set());
+    }
+
+    if (!adjacency.has(edge.secondId)) {
+      adjacency.set(edge.secondId, new Set());
+    }
+
+    adjacency.get(edge.firstId)!.add(edge.secondId);
+    adjacency.get(edge.secondId)!.add(edge.firstId);
+  }
+
+  const visited = new Set<string>();
+  const groups: RecurringIssue[] = [];
+
+  for (const startId of adjacency.keys()) {
+    if (visited.has(startId)) continue;
+
+    const stack = [startId];
+    const groupIds: string[] = [];
+
+    visited.add(startId);
+
+    while (stack.length) {
+      const currentId = stack.pop()!;
+      groupIds.push(currentId);
+
+      for (const neighbour of adjacency.get(currentId) || []) {
+        if (visited.has(neighbour)) continue;
+
+        visited.add(neighbour);
+        stack.push(neighbour);
+      }
+    }
+
+    if (groupIds.length < 2) continue;
+
+    const groupSet = new Set(groupIds);
+
+    const groupEdges = Array.from(edges.values()).filter(
+      (edge) =>
+        groupSet.has(edge.firstId) &&
+        groupSet.has(edge.secondId)
+    );
+
+    const groupComplaints = groupIds
+      .map((id) => complaintMap.get(id))
+      .filter(
+        (item): item is AdminComplaint => Boolean(item)
+      )
+      .sort((a, b) =>
+        (b.createdAt || "").localeCompare(a.createdAt || "")
+      );
+
+    if (groupComplaints.length < 2 || !groupEdges.length) {
+      continue;
+    }
+
+    groups.push({
+      id: groupIds.slice().sort()[0],
+      complaints: groupComplaints,
+      averageSimilarity:
+        groupEdges.reduce(
+          (total, edge) => total + edge.similarity,
+          0
+        ) / groupEdges.length,
+      reasons: groupEdges.map((edge) => edge.reasonEnglish),
+      reasonsAssamese: groupEdges.map(
+        (edge) => edge.reasonAssamese
+      ),
+    });
+  }
+
+  return groups.sort(
+    (a, b) =>
+      b.complaints.length - a.complaints.length ||
+      b.averageSimilarity - a.averageSimilarity
+  );
+}, [complaints]);
+
+const campusHotspots = useMemo<CampusHotspot[]>(() => {
+  const reportsWithCoordinates = complaints
+    .filter(
+      (report) =>
+        report.status !== "rejected" &&
+        report.coordinates &&
+        Number.isFinite(report.coordinates.lat) &&
+        Number.isFinite(report.coordinates.lng)
+    )
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt ?? 0).getTime() -
+        new Date(a.createdAt ?? 0).getTime()
+    );
+
+  const clusters: {
+    id: string;
+    reports: AdminComplaint[];
+    latitude: number;
+    longitude: number;
+  }[] = [];
+
+  const HOTSPOT_RADIUS_METERS = 100;
+
+  for (const report of reportsWithCoordinates) {
+    const coordinates = report.coordinates;
+
+    if (!coordinates) continue;
+
+    let nearestCluster:
+      | (typeof clusters)[number]
+      | undefined;
+
+    let nearestDistance = HOTSPOT_RADIUS_METERS;
+
+    for (const cluster of clusters) {
+      const distance = getDistanceInMeters(
+        coordinates.lat,
+        coordinates.lng,
+        cluster.latitude,
+        cluster.longitude
+      );
+
+      if (distance <= nearestDistance) {
+        nearestDistance = distance;
+        nearestCluster = cluster;
+      }
+    }
+
+    if (nearestCluster) {
+      nearestCluster.reports.push(report);
+
+      const total = nearestCluster.reports.length;
+
+      nearestCluster.latitude =
+        nearestCluster.reports.reduce(
+          (sum, item) => sum + (item.coordinates?.lat ?? 0),
+          0
+        ) / total;
+
+      nearestCluster.longitude =
+        nearestCluster.reports.reduce(
+          (sum, item) => sum + (item.coordinates?.lng ?? 0),
+          0
+        ) / total;
+    } else {
+      clusters.push({
+        id: report.id,
+        reports: [report],
+        latitude: coordinates.lat,
+        longitude: coordinates.lng,
+      });
+    }
+  }
+
+  return clusters
+    .filter((cluster) => cluster.reports.length >= 2)
+    .map((cluster) => {
+      const categoryCounts = new Map<string, number>();
+      const locationCounts = new Map<string, number>();
+
+      for (const report of cluster.reports) {
+        categoryCounts.set(
+          report.category,
+          (categoryCounts.get(report.category) ?? 0) + 1
+        );
+
+        locationCounts.set(
+          report.location,
+          (locationCounts.get(report.location) ?? 0) + 1
+        );
+      }
+
+      const categories = Array.from(categoryCounts.entries())
+        .map(([label, count]) => ({ label, count }))
+        .sort((a, b) => b.count - a.count);
+
+      const location =
+        Array.from(locationCounts.entries()).sort(
+          (a, b) => b[1] - a[1]
+        )[0]?.[0] ?? "Campus area";
+
+      return {
+        id: cluster.id,
+        reports: cluster.reports,
+        latitude: cluster.latitude,
+        longitude: cluster.longitude,
+        unresolvedCount: cluster.reports.filter(
+          (report) =>
+            report.status !== "resolved" &&
+            report.status !== "rejected"
+        ).length,
+        highPriorityCount: cluster.reports.filter((report) =>
+          ["high", "critical"].includes(
+            report.priority.toLowerCase()
+          )
+        ).length,
+        categories,
+        location,
+      };
+    })
+    .sort(
+      (a, b) =>
+        b.reports.length - a.reports.length ||
+        b.unresolvedCount - a.unresolvedCount
+    );
+}, [complaints]);
+
   async function handleSignOut() {
     try {
       await signOut(auth);
@@ -354,6 +642,11 @@ export default function CampusIntelligencePage() {
     } catch {
       setError("Unable to sign out. Please try again.");
     }
+  }
+
+  function navigateTo(path: string) {
+    setMobileMenuOpen(false);
+    router.push(path);
   }
 
   if (loading || !user) {
@@ -372,6 +665,9 @@ export default function CampusIntelligencePage() {
     ...insights.trend.map((day) => day.count),
     1
   );
+
+  const navItemClass =
+    "flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-xs font-semibold text-[#9db2a3] transition hover:bg-white/[0.04] hover:text-white";
 
   return (
     <main className="admin-console min-h-screen bg-[#0b1711] text-[#e8f1eb]">
@@ -411,36 +707,58 @@ export default function CampusIntelligencePage() {
           </button>
         </div>
 
-        <div className="px-4 pt-7">
+        <div className="flex-1 overflow-y-auto px-4 pt-7">
           <p className="mb-3 px-3 text-[9px] font-bold uppercase tracking-[0.18em] text-[#657c6c]">
             Workspace
           </p>
 
           <nav className="space-y-1">
             <button
-              onClick={() => router.push("/admin")}
-              className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-xs font-semibold text-[#9db2a3] transition hover:bg-white/[0.04] hover:text-white"
+              onClick={() => navigateTo("/admin")}
+              className={navItemClass}
             >
               <ClipboardList size={17} />
               Overview
             </button>
 
             <button
-              onClick={() => router.push("/admin#reports")}
-              className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-xs font-semibold text-[#9db2a3] transition hover:bg-white/[0.04] hover:text-white"
+              onClick={() => navigateTo("/admin#reports")}
+              className={navItemClass}
             >
               <Users size={17} />
               Campus reports
             </button>
 
-            <div className="flex w-full items-center gap-3 rounded-xl bg-emerald-400/10 px-3 py-3 text-xs font-semibold text-emerald-300">
+            <button
+              onClick={() => navigateTo("/admin/civic-map")}
+              className={navItemClass}
+            >
+              <MapPinned size={17} />
+              Civic Map
+              <ArrowUpRight size={13} className="ml-auto opacity-50" />
+            </button>
+
+            <button
+              onClick={() => navigateTo("/admin/community")}
+              className={navItemClass}
+            >
+              <Vote size={17} />
+              Community Voting
+              <ArrowUpRight size={13} className="ml-auto opacity-50" />
+            </button>
+
+            <button
+              onClick={() => navigateTo("/admin/analytics")}
+              className="flex w-full items-center gap-3 rounded-xl bg-emerald-400/10 px-3 py-3 text-left text-xs font-semibold text-emerald-300"
+            >
               <BarChart3 size={17} />
               Campus intelligence
-            </div>
+              <span className="ml-auto h-1.5 w-1.5 rounded-full bg-emerald-300" />
+            </button>
           </nav>
         </div>
 
-        <div className="mt-auto p-4">
+        <div className="p-4">
           <div className="rounded-2xl border border-emerald-400/10 bg-emerald-400/[0.06] p-4">
             <div className="flex items-center gap-2 text-emerald-300">
               <Activity size={15} />
@@ -518,7 +836,7 @@ export default function CampusIntelligencePage() {
               </button>
 
               <button
-                onClick={() => router.push("/admin")}
+                onClick={() => navigateTo("/admin")}
                 className="inline-flex h-10 items-center gap-2 rounded-xl bg-emerald-300 px-3 text-xs font-bold text-[#10271d] transition hover:bg-emerald-200"
               >
                 <ArrowLeft size={14} />
@@ -752,6 +1070,298 @@ export default function CampusIntelligencePage() {
             />
           </section>
 
+          <section className="space-y-5">
+  <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-400">
+        Geographic intelligence
+      </p>
+
+      <h2 className="mt-2 text-2xl font-semibold text-white">
+        Campus hotspot intelligence
+      </h2>
+
+      <p className="mt-1 text-sm text-white/50">
+        Identify campus areas with multiple nearby complaints.
+      </p>
+    </div>
+
+    <div className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3">
+      <p className="text-xs text-white/50">Potential hotspots</p>
+      <p className="mt-1 text-2xl font-semibold text-white">
+        {campusHotspots.length}
+      </p>
+    </div>
+  </div>
+
+  {campusHotspots.length === 0 ? (
+    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 text-center">
+      <p className="font-medium text-white">
+        No recurring geographic hotspots yet
+      </p>
+      <p className="mt-2 text-sm text-white/50">
+        At least two reports with valid coordinates must be within
+        approximately 100 metres of one another.
+      </p>
+    </div>
+  ) : (
+    <div className="grid gap-4 xl:grid-cols-2">
+      {campusHotspots.map((hotspot, index) => (
+        <article
+          key={hotspot.id}
+          className="rounded-2xl border border-white/10 bg-white/[0.035] p-5"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-medium text-emerald-400">
+                HOTSPOT #{index + 1}
+              </p>
+
+              <h3 className="mt-2 text-lg font-semibold text-white">
+                {hotspot.location}
+              </h3>
+
+              <p className="mt-1 text-xs text-white/40">
+                {hotspot.latitude.toFixed(4)},{" "}
+                {hotspot.longitude.toFixed(4)}
+              </p>
+            </div>
+
+            <span className="rounded-full bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-300">
+              {hotspot.reports.length} reports
+            </span>
+          </div>
+
+          <div className="mt-5 grid grid-cols-2 gap-3">
+            <div className="rounded-xl bg-white/[0.04] p-3">
+              <p className="text-xs text-white/45">Unresolved</p>
+              <p className="mt-1 text-xl font-semibold text-white">
+                {hotspot.unresolvedCount}
+              </p>
+            </div>
+
+            <div className="rounded-xl bg-white/[0.04] p-3">
+              <p className="text-xs text-white/45">
+                High / critical priority
+              </p>
+              <p className="mt-1 text-xl font-semibold text-white">
+                {hotspot.highPriorityCount}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-white/45">
+              Report categories
+            </p>
+
+            <div className="mt-3 flex flex-wrap gap-2">
+              {hotspot.categories.map((category) => (
+                <span
+                  key={category.label}
+                  className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs text-white/75"
+                >
+                  {category.label} · {category.count}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-5 border-t border-white/10 pt-4">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-white/45">
+              Recent reports
+            </p>
+
+            <div className="space-y-3">
+              {hotspot.reports.slice(0, 3).map((report) => (
+                <div
+                  key={report.id}
+                  className="flex items-center justify-between gap-3"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm text-white/85">
+                      {report.title}
+                    </p>
+                    <p className="mt-1 text-xs text-white/40">
+                      {report.category} · {report.department}
+                    </p>
+                  </div>
+
+                  <span className="shrink-0 rounded-full bg-white/[0.06] px-2.5 py-1 text-[10px] text-white/65">
+                    {report.status.replaceAll("_", " ")}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+<br />
+          <a
+  href="/campus-map"
+  className="inline-flex items-center gap-2 rounded-xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-2.5 text-sm font-medium text-emerald-300 transition hover:bg-emerald-400/20"
+>
+  <MapPin className="h-4 w-4" />
+  View all issues on Civic Map
+</a>
+{/* 
+          <a
+            href="/campus-map"
+            className="mt-5 inline-flex text-sm font-medium text-emerald-300 transition hover:text-emerald-200"
+          >
+            Explore Civic Map →
+          </a> */}
+        </article>
+      ))}
+    </div>
+  )}
+
+  <p className="text-xs leading-relaxed text-white/35">
+    Hotspots are approximate geographic clusters based on report
+    coordinates within a 100-metre radius. They indicate areas with
+    multiple reports, not confirmed causes or verified incidents.
+    Results depend on the reports currently loaded by the admin API.
+  </p>
+</section>
+
+          <section className={`${panel} p-5 sm:p-6`}>
+  <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+    <div>
+      <div className="flex items-center gap-2">
+        <Activity size={17} className="text-emerald-300" />
+        <h2 className="text-lg font-semibold text-[#e8f1eb]">
+          Recurring issue intelligence
+        </h2>
+      </div>
+
+      <p className="mt-2 text-xs leading-5 text-[#82998b]">
+        Related complaints identified by Gemini's bilingual
+        duplicate detection.
+      </p>
+    </div>
+
+    <div className="rounded-xl border border-emerald-400/15 bg-emerald-400/[0.06] px-4 py-3">
+      <p className="text-[10px] text-[#91a79a]">
+        Potential issue groups
+      </p>
+      <p className="mt-1 text-2xl font-semibold text-emerald-300">
+        {recurringIssues.length}
+      </p>
+    </div>
+  </div>
+
+  {recurringIssues.length === 0 ? (
+    <div className="mt-6 rounded-xl border border-dashed border-white/10 px-4 py-10 text-center">
+      <Activity
+        size={25}
+        className="mx-auto text-[#82998b]"
+      />
+
+      <p className="mt-3 text-sm font-medium text-[#dce9df]">
+        No recurring issue groups found
+      </p>
+
+      <p className="mx-auto mt-2 max-w-md text-xs leading-5 text-[#82998b]">
+        Run duplicate detection on campus reports to identify
+        potentially related complaints here.
+      </p>
+    </div>
+  ) : (
+    <div className="mt-6 space-y-4">
+      {recurringIssues.map((group, index) => (
+        <article
+          key={group.id}
+          className="rounded-2xl border border-white/[0.08] bg-white/[0.025] p-4"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-300">
+                Potential recurring pattern {index + 1}
+              </p>
+
+              <h3 className="mt-2 text-sm font-semibold text-[#e8f1eb]">
+                {group.complaints.length} related reports
+              </h3>
+            </div>
+
+            <div className="rounded-lg bg-emerald-400/10 px-3 py-2">
+              <p className="text-[9px] text-[#91a79a]">
+                Average similarity
+              </p>
+              <p className="mt-1 text-sm font-semibold text-emerald-300">
+                {Math.round(group.averageSimilarity * 100)}%
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4 space-y-2">
+            {group.complaints.map((complaint) => (
+              <div
+                key={complaint.id}
+                className="rounded-xl border border-white/[0.06] bg-[#0b1711]/60 p-3"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-xs font-semibold text-[#dce9df]">
+                    {complaint.title}
+                  </span>
+
+                  <span className="rounded-full bg-white/[0.06] px-2 py-1 text-[9px] text-[#a9bdb0]">
+                    {complaint.status.replaceAll("_", " ")}
+                  </span>
+                </div>
+
+                <p className="mt-2 text-[11px] leading-5 text-[#91a79a]">
+                  {complaint.location || "Location unavailable"}
+                </p>
+
+                <p className="mt-1 text-[10px] text-[#718b7b]">
+                  {complaint.language === "as"
+                    ? "অসমীয়া"
+                    : "English"}
+                  {" · "}
+                  {complaint.category || "Uncategorized"}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {group.reasons.length > 0 && (
+            <div className="mt-4 rounded-xl border border-emerald-400/10 bg-emerald-400/[0.04] p-3">
+              <p className="text-[10px] font-semibold text-emerald-300">
+                Gemini's comparison
+              </p>
+
+              <p className="mt-2 text-xs leading-5 text-[#b6c8bc]">
+                {group.reasons[0]}
+              </p>
+
+              {group.reasonsAssamese[0] && (
+                <p className="mt-2 text-xs leading-5 text-[#b6c8bc]">
+                  {group.reasonsAssamese[0]}
+                </p>
+              )}
+            </div>
+          )}
+
+          <button
+            onClick={() => navigateTo("/admin#reports")}
+            className="mt-4 inline-flex items-center gap-2 text-xs font-semibold text-emerald-300 transition hover:text-emerald-200"
+          >
+            Review reports
+            <ArrowUpRight size={13} />
+          </button>
+        </article>
+      ))}
+    </div>
+  )}
+
+  <p className="mt-4 text-[10px] leading-5 text-[#718b7b]">
+    These are AI-identified potential relationships, not
+    confirmed duplicates. Administrators must verify whether
+    reports describe the same real-world issue. Results are
+    limited to matches saved for reports in the currently loaded
+    dataset.
+  </p>
+</section>
+
           <section className={`${panel} p-5`}>
             <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
               <div>
@@ -766,7 +1376,7 @@ export default function CampusIntelligencePage() {
               </div>
 
               <button
-                onClick={() => router.push("/admin#reports")}
+                onClick={() => navigateTo("/admin#reports")}
                 className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-emerald-300 px-4 text-xs font-bold text-[#10271d] transition hover:bg-emerald-200"
               >
                 Review campus reports
@@ -785,4 +1395,25 @@ export default function CampusIntelligencePage() {
       </div>
     </main>
   );
+}
+
+function getDistanceInMeters(
+  lat1: number,
+  lng1: number,
+  lat2: number,
+  lng2: number
+) {
+  const earthRadius = 6371000;
+  const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
+
+  const dLat = toRadians(lat2 - lat1);
+  const dLng = toRadians(lng2 - lng1);
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRadians(lat1)) *
+      Math.cos(toRadians(lat2)) *
+      Math.sin(dLng / 2) ** 2;
+
+  return earthRadius * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
