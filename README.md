@@ -190,4 +190,6 @@ Developed as a hackathon project for **Game of Codes — ANAZORI V16.0**, organi
 
 ## 📄 License
 
-Choose and add an appropriate open-source license before redistributing this project.
+This project is licensed under the [MIT License](LICENSE).
+
+Copyright © 2026 Gyanam. All rights reserved.
