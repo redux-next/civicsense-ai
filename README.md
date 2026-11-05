@@ -1,36 +1,193 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CivicSense AI 🌱
 
-## Getting Started
+### AI-Powered Campus Issue Reporting & Intelligence Platform
 
-First, run the development server:
+CivicSense AI is an intelligent campus management platform designed to make educational institutions more responsive, transparent, and connected.
+
+It enables students to report campus problems, participate in community discussions, and track issue resolution, while administrators gain AI-powered tools to analyse complaints, identify recurring problems, and make data-informed decisions.
+
+**Built for Game of Codes — ANAZORI V16.0 | Dibrugarh University**
+
+---
+
+## ✨ Key Features
+
+### 🤖 AI-Powered Complaint Analysis
+- AI-assisted complaint analysis using Google Gemini.
+- Supports English and Assamese reporting.
+- Automatically analyses complaint descriptions and categorises issues.
+- Helps administrators understand and prioritise reported problems.
+
+### 🔍 Duplicate Detection
+- Identifies potentially duplicate complaints.
+- Helps reduce repetitive reports.
+- Detects recurring campus issues and patterns.
+
+### 📍 CivicMap
+- Interactive map for visualising reported campus issues.
+- Geographic identification of issue hotspots.
+- Helps administrators understand where problems are concentrated.
+- Restricted to authenticated administrators through server-side authorisation.
+
+### 🏛️ Student Dashboard
+- Submit and manage complaints.
+- Upload supporting images.
+- Track complaint information and updates.
+- Access campus community features.
+
+### 🛡️ Admin Dashboard
+- Centralised complaint management.
+- Review and manage reported issues.
+- Access AI-generated complaint insights.
+- Monitor recurring issues and campus activity.
+
+### 💬 CivicSpace
+- Community discussions and campus updates.
+- Posts, comments, and voting.
+- A shared space for student participation and engagement.
+
+### 📊 Campus Intelligence
+- Insights into recurring campus problems.
+- Geographic hotspot analysis.
+- Better visibility into campus-wide issue patterns.
+
+### 🎨 User Experience
+- Responsive desktop and mobile interface.
+- Light and dark themes.
+- Image uploads with Cloudinary.
+- Modern campus-focused design.
+
+---
+
+## 🛠️ Tech Stack
+
+| Technology | Purpose |
+|---|---|
+| Next.js | Full-stack application framework |
+| TypeScript | Type-safe development |
+| React | User interface |
+| Firebase Authentication | User authentication |
+| Cloud Firestore | Database |
+| Google Gemini AI | AI-powered complaint analysis |
+| Cloudinary | Image storage and uploads |
+| Leaflet | Interactive maps |
+| OpenStreetMap | Map data |
+| Vercel | Deployment |
+
+---
+
+## 🏗️ System Architecture
+
+```mermaid
+flowchart TD
+    A[Students] --> B[Next.js Application]
+    C[Administrators] --> B
+
+    B --> D[Firebase Authentication]
+    B --> E[Next.js API Routes]
+
+    E --> F[Cloud Firestore]
+    E --> G[Google Gemini AI]
+    E --> H[Cloudinary]
+
+    F --> I[Complaint Management]
+    G --> J[AI Complaint Analysis]
+    F --> K[Duplicate Detection]
+    F --> L[CivicSpace]
+
+    I --> M[Admin Dashboard]
+    K --> N[CivicMap]
+    L --> O[Campus Community]
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js (compatible with the project)
+- npm
+- Firebase project
+- Google Gemini API key
+- Cloudinary account
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/redux-next/civicsense-ai.git
+```
+
+### 2. Navigate into the project
+
+```bash
+cd civicsense-ai
+```
+
+### 3. Install dependencies
+
+```bash
+npm install
+```
+
+### 4. Configure environment variables
+
+Create a `.env.local` file in the project root.
+
+Configure your Firebase credentials, Gemini API key, Cloudinary credentials, and administrator email configuration according to the environment variable names used in the project.
+
+Example:
+
+```env
+CIVICSENSE_ADMIN_EMAILS=admin@example.com
+```
+
+**Important:** Keep API keys and private credentials server-side. Never commit `.env.local` or expose secret keys in client-side code.
+
+### 5. Start the development server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 6. Build for production
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 🔐 Security
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Firebase Authentication for user identity.
+- Role-based access control for administrative features.
+- Server-side authorisation for protected administrator functionality.
+- CivicMap and its APIs are restricted to authenticated administrators.
+- Sensitive credentials are stored in environment variables.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🌍 Vision
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+CivicSense AI aims to transform traditional campus complaint systems into intelligent, transparent, and community-driven platforms.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+By combining artificial intelligence, geographic intelligence, and student participation, it helps institutions identify problems, understand recurring patterns, and make better decisions.
+
+**A smarter campus starts with a voice that gets heard.**
+
+---
+
+## 👨‍💻 Built With
+
+Developed as a hackathon project for **Game of Codes — ANAZORI V16.0**, organised by the Centre for Computer Science and Applications, Dibrugarh University.
+
+**Developer:** Gyanam
+
+---
+
+## 📄 License
+
+Choose and add an appropriate open-source license before redistributing this project.
