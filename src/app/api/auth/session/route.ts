@@ -3,7 +3,7 @@ import { adminAuth } from "@/lib/firebase/admin";
 import { verifyFirebaseToken } from "@/lib/firebase/verify-token";
 
 const COOKIE_NAME = "__session";
-const EXPIRES_IN = 5 * 24 * 60 * 60 * 1000; // 5 days
+const EXPIRES_IN = 5 * 24 * 60 * 60 * 1000; // after 5 days, the session cookie will expire and the user will have to sign in again
 
 export async function POST(request: Request) {
   try {
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
         { error: "Please sign in again to create a session." },
         { status: 401 }
       );
-    }
+    };
 
     const sessionCookie = await adminAuth.createSessionCookie(
       idToken,

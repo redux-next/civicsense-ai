@@ -467,9 +467,9 @@ export default function DashboardPage() {
               </SidebarLink>
             </div>
 
-<p className="mb-3 mt-8 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-[#769383]">
-  Community
-</p>
+            <p className="mb-3 mt-8 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-[#769383]">
+              Community
+            </p>
 
             <div className="space-y-1">
               {/* <SidebarLink
@@ -486,7 +486,7 @@ export default function DashboardPage() {
                 icon={<Users size={18} />}
                 onClick={() => navigateToPage("/community")}
               >
-                Community voting
+                COMMUNITY
                 <ArrowUpRight size={14} className="ml-auto opacity-60" />
               </SidebarLink>
             </div>
@@ -870,8 +870,8 @@ export default function DashboardPage() {
                           <p
                             role="status"
                             className={`mt-2 text-xs ${coordinates
-                                ? "text-emerald-700"
-                                : "text-[#829087]"
+                              ? "text-emerald-700"
+                              : "text-[#829087]"
                               }`}
                           >
                             {locationMessage}
@@ -1144,8 +1144,8 @@ function SidebarLink({
       type="button"
       onClick={onClick}
       className={`flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-left text-xs font-bold transition ${active
-          ? "bg-[#a9f16c] text-[#173522] shadow-lg shadow-black/10"
-          : "text-[#a9bdb0] hover:bg-white/[0.07] hover:text-white"
+        ? "bg-[#a9f16c] text-[#173522] shadow-lg shadow-black/10"
+        : "text-[#a9bdb0] hover:bg-white/[0.07] hover:text-white"
         }`}
     >
       {icon}
@@ -1170,8 +1170,8 @@ function MobileNavItem({
       type="button"
       onClick={onClick}
       className={`flex min-h-12 min-w-0 flex-col items-center justify-center gap-1 rounded-xl text-[9px] font-bold transition ${active
-          ? "bg-[#eaf4e4] text-[#28643d]"
-          : "text-[#809083] hover:bg-[#f4f7f2]"
+        ? "bg-[#eaf4e4] text-[#28643d]"
+        : "text-[#809083] hover:bg-[#f4f7f2]"
         }`}
     >
       {icon}
@@ -1312,8 +1312,8 @@ function LanguageButton({
       onClick={onClick}
       aria-pressed={active}
       className={`min-h-11 rounded-xl border px-3 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#75a66a] ${active
-          ? "border-[#b9d8ad] bg-[#eaf4e4] text-[#28643d]"
-          : "border-[#e6ece3] bg-white text-[#879389] hover:bg-[#f8faf6]"
+        ? "border-[#b9d8ad] bg-[#eaf4e4] text-[#28643d]"
+        : "border-[#e6ece3] bg-white text-[#879389] hover:bg-[#f8faf6]"
         }`}
     >
       {children}

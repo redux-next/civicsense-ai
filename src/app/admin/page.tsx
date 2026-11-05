@@ -683,8 +683,8 @@ export default function AdminPage() {
               }}
               className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-xs font-semibold text-[#9db2a3] transition hover:bg-white/[0.04] hover:text-white"
             >
-              <Activity size={17} />
-              Community voting
+              <ShieldCheck size={17} />
+              CivicSpace moderation
               <ArrowUpRight size={13} className="ml-auto" />
             </button>
 
@@ -993,15 +993,16 @@ export default function AdminPage() {
                 className={`${panel} group flex items-center gap-4 p-5 text-left transition hover:border-emerald-400/30 hover:bg-[#172d20]`}
               >
                 <div className="rounded-xl bg-violet-400/10 p-3 text-violet-300">
-                  <Activity size={21} />
+                  <ShieldCheck size={21} />
                 </div>
 
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-[#e8f1eb]">
-                    Community Voting
+                    CivicSpace Moderation
                   </p>
                   <p className="mt-1 text-[11px] leading-5 text-[#82998b]">
-                    Monitor upvotes, downvotes and community-supported reports.
+                    Review student posts and comments, investigate reports,
+                    and moderate inappropriate community content.
                   </p>
                 </div>
 

@@ -125,9 +125,9 @@ export async function POST(request: Request) {
 
       // Community voting
       // Community voting
-voteCount: 0,
-upvoteCount: 0,
-downvoteCount: 0,
+      voteCount: 0,
+      upvoteCount: 0,
+      downvoteCount: 0,
 
       image: verifiedImage,
       aiAnalysis: null,

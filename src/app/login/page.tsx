@@ -25,6 +25,8 @@ import {
   Sparkles,
   UserRound,
   Leaf,
+  MessageSquare,
+  BrainCircuit,
 } from "lucide-react";
 
 import { auth } from "@/lib/firebase/client";
@@ -47,7 +49,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  // Redirect according to the authenticated user's role.
+  // Role-based navigation.
   const redirectAfterLogin = (profile: UserProfile) => {
     const destination =
       profile.role?.toLowerCase() === "admin"
@@ -58,7 +60,7 @@ export default function LoginPage() {
     router.refresh();
   };
 
-  // Existing authenticated users also get role-based redirection.
+  // Redirect already authenticated users.
   useEffect(() => {
     let cancelled = false;
 
@@ -76,14 +78,14 @@ export default function LoginPage() {
           cache: "no-store",
         });
 
-        if (!response.ok) {
+        const data = await response.json().catch(() => null);
+
+        if (!response.ok || !data?.profile) {
           throw new Error("Unable to load your account profile.");
         }
 
-        const profile: UserProfile = await response.json();
-
         if (!cancelled) {
-          redirectAfterLogin(profile);
+          redirectAfterLogin(data.profile as UserProfile);
         }
       } catch {
         if (!cancelled) {
@@ -101,53 +103,49 @@ export default function LoginPage() {
     };
   }, [user, loading, submitting]);
 
-  // Save profile and establish a secure server session.
+  // Load profile and establish secure server session.
+  async function saveProfile(): Promise<UserProfile> {
+    const token = await auth.currentUser?.getIdToken(true);
 
-async function saveProfile(): Promise<UserProfile> {
-  const token = await auth.currentUser?.getIdToken(true);
+    if (!token) {
+      throw new Error("Unable to verify your account.");
+    }
 
-  if (!token) {
-    throw new Error("Unable to verify your account.");
+    const response = await fetch("/api/users/profile", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      cache: "no-store",
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok || !data?.profile) {
+      throw new Error(
+        data?.error ||
+          "Your account profile could not be loaded. Please sign in again."
+      );
+    }
+
+    const sessionResponse = await fetch("/api/auth/session", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!sessionResponse.ok) {
+      const sessionError = await sessionResponse.json().catch(() => null);
+
+      throw new Error(
+        sessionError?.error ||
+          "Unable to establish your secure session. Please sign in again."
+      );
+    }
+
+    return data.profile as UserProfile;
   }
-
-  const response = await fetch("/api/users/profile", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    cache: "no-store",
-  });
-
-  const data = await response.json().catch(() => null);
-
-  if (!response.ok || !data?.profile) {
-    throw new Error(
-      data?.error ||
-        "Your account profile could not be loaded. Please sign in again."
-    );
-  }
-
-  const profile: UserProfile = data.profile;
-
-  const sessionResponse = await fetch("/api/auth/session", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  if (!sessionResponse.ok) {
-    const sessionError = await sessionResponse.json().catch(() => null);
-
-    throw new Error(
-      sessionError?.error ||
-        "Unable to establish your secure session. Please sign in again."
-    );
-  }
-
-  return profile;
-}
-
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -263,7 +261,7 @@ async function saveProfile(): Promise<UserProfile> {
     }
   }
 
-  if (loading || user || submitting && !error) {
+  if (loading || (user && !error) || (submitting && !error)) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#f5f7f4] text-sm text-[#718078] dark:bg-[#101713] dark:text-[#a3b3a8]">
         <span className="mr-3 h-2.5 w-2.5 animate-pulse rounded-full bg-[#27845e]" />
@@ -274,8 +272,10 @@ async function saveProfile(): Promise<UserProfile> {
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#f4f7f3] px-4 py-5 text-[#20372e] selection:bg-[#b8e4c5] selection:text-[#173f32] dark:bg-[#101713] dark:text-[#edf5ef] sm:px-6 sm:py-8">
+
       {/* Ambient background */}
       <div className="pointer-events-none absolute -left-40 top-10 h-96 w-96 rounded-full bg-[#c8e6cf]/40 blur-[100px] dark:bg-[#245b3c]/15" />
+
       <div className="pointer-events-none absolute -bottom-40 right-0 h-[500px] w-[500px] rounded-full bg-[#d8e9dc]/50 blur-[120px] dark:bg-[#214e35]/15" />
 
       <ThemeToggle className="absolute right-6 top-6 z-30 md:right-10 md:top-10" />
@@ -284,9 +284,14 @@ async function saveProfile(): Promise<UserProfile> {
 
         {/* LEFT PANEL */}
         <section className="relative isolate flex min-h-[360px] flex-col justify-between overflow-hidden bg-[#173f32] p-7 text-white sm:p-10 lg:p-14">
+
+          {/* Decorative elements */}
           <div className="pointer-events-none absolute -right-32 -top-32 -z-10 h-[450px] w-[450px] rounded-full border border-white/[0.07]" />
+
           <div className="pointer-events-none absolute -right-16 -top-16 -z-10 h-[320px] w-[320px] rounded-full border border-white/[0.07]" />
+
           <div className="pointer-events-none absolute -bottom-40 -left-28 -z-10 h-[430px] w-[430px] rounded-full bg-[#65b982]/20 blur-[90px]" />
+
           <div className="pointer-events-none absolute bottom-0 right-0 -z-10 h-80 w-80 bg-gradient-to-tl from-[#8bd4a1]/10 to-transparent" />
 
           {/* Brand */}
@@ -299,6 +304,7 @@ async function saveProfile(): Promise<UserProfile> {
               <p className="text-xl font-extrabold tracking-[-0.055em]">
                 CivicSense <span className="text-[#9bd6ad]">AI</span>
               </p>
+
               <p className="mt-0.5 text-[9px] font-semibold uppercase tracking-[0.24em] text-[#b7d6c1]">
                 Campus, heard.
               </p>
@@ -307,59 +313,94 @@ async function saveProfile(): Promise<UserProfile> {
 
           {/* Main message */}
           <div className="relative mt-14 max-w-xl md:mt-20">
+
             <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-[#b2e6c1]/20 bg-[#b2e6c1]/10 px-3.5 py-2 text-[10px] font-bold uppercase tracking-[0.14em] text-[#d6f3de] backdrop-blur-md">
               <Sparkles size={13} className="text-[#a6e7b8]" />
-              A smarter campus starts here
+              One platform. A stronger campus.
             </div>
 
             <h1 className="text-[2.8rem] font-semibold leading-[1.08] tracking-[-0.065em] sm:text-6xl lg:text-[4.5rem]">
-              Make your
+              One campus.
               <br />
-              campus <span className="text-[#9bd6ad]">better.</span>
+              Two ways to
+              <br />
+              <span className="text-[#9bd6ad]">
+                make change.
+              </span>
             </h1>
 
             <p className="mt-6 max-w-md text-sm leading-7 text-[#c5dbcb] sm:text-base">
-              Every concern deserves to be heard. Share campus issues, follow
-              their progress, and help build a better environment for everyone.
+              CivicSense AI brings students together through CivicSpace
+              and intelligent campus issue management. Connect, speak up,
+              and turn shared concerns into meaningful action.
             </p>
 
-            <div className="mt-9 space-y-4">
-              {[
-                "Report issues in Assamese or English",
-                "Get AI-assisted insights",
-                "Track progress transparently",
-              ].map((feature) => (
-                <div key={feature} className="flex items-center gap-3">
-                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#a7e2b9]/15 text-[#a7e2b9]">
-                    <Check size={12} strokeWidth={3} />
-                  </div>
-                  <span className="text-xs font-medium text-[#d2e4d7] sm:text-sm">
-                    {feature}
-                  </span>
+            {/* Platform features */}
+            <div className="mt-9 space-y-6">
+
+              {/* CivicSpace */}
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.09] text-[#a7e2b9]">
+                  <MessageSquare size={19} />
                 </div>
-              ))}
+
+                <div>
+                  <h3 className="text-sm font-bold text-white">
+                    CivicSpace
+                  </h3>
+
+                  <p className="mt-1 max-w-sm text-xs leading-6 text-[#c5dbcb]">
+                    Your campus community. Discover concerns, join
+                    discussions, support complaints, and vote on what matters.
+                  </p>
+                </div>
+              </div>
+
+              {/* AI Issue Management */}
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.09] text-[#a7e2b9]">
+                  <BrainCircuit size={19} />
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-bold text-white">
+                    AI-powered issue management
+                  </h3>
+
+                  <p className="mt-1 max-w-sm text-xs leading-6 text-[#c5dbcb]">
+                    Submit campus complaints, get AI-assisted analysis,
+                    detect duplicate reports, and follow resolution progress.
+                  </p>
+                </div>
+              </div>
+
             </div>
           </div>
 
           {/* Bottom footer */}
           <div className="mt-14 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6">
+
             <div className="flex items-center gap-2 text-xs text-[#b9d5c1]">
               <CheckCircle2 size={15} className="text-[#9bd6ad]" />
-              Your campus. Your voice.
+              Your campus. Your community. Your voice.
             </div>
 
             <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9ebba7]">
               <Leaf size={13} />
-              Built for better communities
+              Powered by community
             </div>
+
           </div>
         </section>
 
         {/* RIGHT PANEL */}
         <section className="flex items-center justify-center px-6 py-12 sm:px-10 lg:px-14 xl:px-16">
+
           <div className="w-full max-w-[410px]">
 
+            {/* Login heading */}
             <div className="mb-9">
+
               <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl border border-[#dcebe0] bg-[#f0f7f1] text-[#286747] dark:border-[#335342] dark:bg-[#21382a] dark:text-[#a7dfb6]">
                 {isRegister ? (
                   <UserRound size={22} strokeWidth={1.8} />
@@ -369,7 +410,9 @@ async function saveProfile(): Promise<UserProfile> {
               </div>
 
               <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#6b9a7c] dark:text-[#a0c9aa]">
-                {isRegister ? "Join the community" : "Student portal"}
+                {isRegister
+                  ? "Join the community"
+                  : "Your campus community awaits"}
               </p>
 
               <h2 className="mt-3 text-3xl font-semibold tracking-[-0.055em] text-[#203c30] dark:text-[#eff8f0] sm:text-[2.55rem]">
@@ -378,12 +421,15 @@ async function saveProfile(): Promise<UserProfile> {
 
               <p className="mt-3 text-sm leading-6 text-[#87948b] dark:text-[#a3b1a7]">
                 {isRegister
-                  ? "A few details and you're ready to make a difference."
-                  : "Sign in to raise concerns and stay connected with your campus."}
+                  ? "Join CivicSpace, connect with your campus, and help create meaningful change."
+                  : "Access CivicSpace, report campus concerns, and stay connected with every update."}
               </p>
             </div>
 
+            {/* Authentication form */}
             <form onSubmit={handleSubmit} className="space-y-5">
+
+              {/* Full name */}
               {isRegister && (
                 <div>
                   <label
@@ -394,7 +440,11 @@ async function saveProfile(): Promise<UserProfile> {
                   </label>
 
                   <div className="group flex items-center rounded-xl border border-[#e2eae2] bg-[#fafcf9] px-3.5 transition-all duration-200 focus-within:border-[#70a987] focus-within:bg-white focus-within:ring-4 focus-within:ring-[#e8f3ea] dark:border-white/10 dark:bg-white/[0.04] dark:focus-within:border-[#659a76] dark:focus-within:bg-white/[0.07] dark:focus-within:ring-[#4b805a]/15">
-                    <UserRound size={17} className="shrink-0 text-[#91a095] transition-colors group-focus-within:text-[#36764f]" />
+
+                    <UserRound
+                      size={17}
+                      className="shrink-0 text-[#91a095] transition-colors group-focus-within:text-[#36764f]"
+                    />
 
                     <input
                       id="name"
@@ -409,6 +459,7 @@ async function saveProfile(): Promise<UserProfile> {
                 </div>
               )}
 
+              {/* Email */}
               <div>
                 <label
                   htmlFor="email"
@@ -418,7 +469,11 @@ async function saveProfile(): Promise<UserProfile> {
                 </label>
 
                 <div className="group flex items-center rounded-xl border border-[#e2eae2] bg-[#fafcf9] px-3.5 transition-all duration-200 focus-within:border-[#70a987] focus-within:bg-white focus-within:ring-4 focus-within:ring-[#e8f3ea] dark:border-white/10 dark:bg-white/[0.04] dark:focus-within:border-[#659a76] dark:focus-within:bg-white/[0.07] dark:focus-within:ring-[#4b805a]/15">
-                  <Mail size={17} className="shrink-0 text-[#91a095] transition-colors group-focus-within:text-[#36764f]" />
+
+                  <Mail
+                    size={17}
+                    className="shrink-0 text-[#91a095] transition-colors group-focus-within:text-[#36764f]"
+                  />
 
                   <input
                     id="email"
@@ -433,6 +488,7 @@ async function saveProfile(): Promise<UserProfile> {
                 </div>
               </div>
 
+              {/* Password */}
               <div>
                 <label
                   htmlFor="password"
@@ -442,7 +498,11 @@ async function saveProfile(): Promise<UserProfile> {
                 </label>
 
                 <div className="group flex items-center rounded-xl border border-[#e2eae2] bg-[#fafcf9] px-3.5 transition-all duration-200 focus-within:border-[#70a987] focus-within:bg-white focus-within:ring-4 focus-within:ring-[#e8f3ea] dark:border-white/10 dark:bg-white/[0.04] dark:focus-within:border-[#659a76] dark:focus-within:bg-white/[0.07] dark:focus-within:ring-[#4b805a]/15">
-                  <LockKeyhole size={17} className="shrink-0 text-[#91a095] transition-colors group-focus-within:text-[#36764f]" />
+
+                  <LockKeyhole
+                    size={17}
+                    className="shrink-0 text-[#91a095] transition-colors group-focus-within:text-[#36764f]"
+                  />
 
                   <input
                     id="password"
@@ -475,6 +535,7 @@ async function saveProfile(): Promise<UserProfile> {
                 </div>
               </div>
 
+              {/* Error */}
               {error && (
                 <div
                   role="alert"
@@ -485,6 +546,7 @@ async function saveProfile(): Promise<UserProfile> {
                 </div>
               )}
 
+              {/* Submit */}
               <button
                 type="submit"
                 disabled={submitting}
@@ -507,14 +569,18 @@ async function saveProfile(): Promise<UserProfile> {
               </button>
             </form>
 
+            {/* Divider */}
             <div className="my-7 flex items-center gap-4">
               <div className="h-px flex-1 bg-[#e9eee9] dark:bg-white/10" />
+
               <span className="text-[9px] font-bold tracking-[0.18em] text-[#a1aca3]">
                 OR CONTINUE WITH
               </span>
+
               <div className="h-px flex-1 bg-[#e9eee9] dark:bg-white/10" />
             </div>
 
+            {/* Google sign-in */}
             <button
               type="button"
               onClick={handleGoogleSignIn}
@@ -530,14 +596,17 @@ async function saveProfile(): Promise<UserProfile> {
                   fill="#EA4335"
                   d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.02 13.22l7.98 6.19C11.88 13.72 17.46 9.5 24 9.5Z"
                 />
+
                 <path
                   fill="#4285F4"
                   d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.72 7.18l7.62 5.91c4.44-4.1 7.14-10.14 7.14-17.56Z"
                 />
+
                 <path
                   fill="#FBBC05"
                   d="M9.99 28.59A14.4 14.4 0 0 1 9.2 24c0-1.59.27-3.13.76-4.59l-7.98-6.19A23.9 23.9 0 0 0 0 24c0 3.87.93 7.52 2.57 10.78l7.42-6.19Z"
                 />
+
                 <path
                   fill="#34A853"
                   d="M24 48c6.48 0 11.93-2.13 15.91-5.89l-7.62-5.91c-2.12 1.42-4.84 2.26-8.29 2.26-6.54 0-12.12-4.22-14-9.91l-7.42 6.19C6.51 42.62 14.62 48 24 48Z"
@@ -547,10 +616,12 @@ async function saveProfile(): Promise<UserProfile> {
               Continue with Google
             </button>
 
+            {/* Register / Login switch */}
             <div className="mt-8 text-center text-sm text-[#87948b] dark:text-[#9eada2]">
               {isRegister
                 ? "Already have an account?"
                 : "New to CivicSense?"}{" "}
+
               <button
                 type="button"
                 onClick={() => {
@@ -563,14 +634,17 @@ async function saveProfile(): Promise<UserProfile> {
               </button>
             </div>
 
+            {/* Security footer */}
             <div className="mt-9 flex items-center justify-center gap-2 text-center text-[10px] leading-5 text-[#a0aaa2] dark:text-[#819087]">
               <LockKeyhole size={12} />
               Secure authentication · Your information stays protected
             </div>
+
           </div>
         </section>
       </div>
 
+      {/* Copyright */}
       <p className="relative mt-5 text-center text-[10px] tracking-wide text-[#9aa79d] dark:text-[#728077]">
         © {new Date().getFullYear()} CivicSense AI. Built for better campuses.
       </p>

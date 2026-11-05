@@ -28,7 +28,7 @@ export default async function CampusMapPage() {
       true
     );
   } catch {
-    redirect("/login");
+    redirect("/loggin");
   }
 
   const allowedEmails = (

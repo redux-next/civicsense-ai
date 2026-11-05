@@ -12,40 +12,40 @@
 :root {
   color-scheme: light;
 
-  --background: #f5f7f4;
-  --foreground: #20372e;
+  --background: #F8FAFC;
+  --foreground: #1E293B;
 
-  --surface: #ffffff;
-  --surface-secondary: #f8faf7;
+  --surface: #FFFFFF;
+  --surface-secondary: #F1F5F9;
 
-  --border: #e2e9e2;
-  --muted: #65766b;
+  --border: #E2E8F0;
+  --muted: #64748B;
 
-  --input-background: #fafbf8;
-  --input-border: #dfe7dc;
+  --input-background: #FFFFFF;
+  --input-border: #CBD5E1;
 
-  --accent: #28714e;
-  --accent-soft: #e7f1e2;
+  --accent: #047857;
+  --accent-soft: #ECFDF5;
 }
 
 html.dark,
 html[data-theme="dark"] {
   color-scheme: dark;
 
-  --background: #101a14;
-  --foreground: #e1ebe3;
+  --background: #0F172A;
+  --foreground: #E2E8F0;
 
-  --surface: #17251c;
-  --surface-secondary: #14221b;
+  --surface: #172033;
+  --surface-secondary: #1E293B;
 
-  --border: #304438;
-  --muted: #a9b8ac;
+  --border: #334155;
+  --muted: #94A3B8;
 
-  --input-background: #17251c;
-  --input-border: #3a5141;
+  --input-background: #172033;
+  --input-border: #475569;
 
-  --accent: #8bd9ae;
-  --accent-soft: #24382b;
+  --accent: #34D399;
+  --accent-soft: #163B32;
 }
 
 @theme inline {
@@ -106,18 +106,22 @@ a {
 }
 
 ::selection {
-  background: #cde8d3;
-  color: #173f32;
+  background: #A7F3D0;
+  color: #064E3B;
 }
 
 html.dark ::selection {
-  background: #315b43;
-  color: #ffffff;
+  background: #065F46;
+  color: #FFFFFF;
 }
 
 :focus-visible {
-  outline: 3px solid rgba(105, 173, 125, 0.48);
+  outline: 3px solid rgba(4, 120, 87, 0.4);
   outline-offset: 2px;
+}
+
+html.dark :focus-visible {
+  outline-color: rgba(52, 211, 153, 0.55);
 }
 
 /* =========================================
@@ -163,12 +167,17 @@ html.dark ::selection {
 }
 
 .form-input:hover {
-  border-color: #9bb99b;
+  border-color: #6EE7B7;
 }
 
 .form-input:focus {
-  border-color: #72a66b;
+  border-color: #047857;
   background: var(--surface);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+html.dark .form-input:focus {
+  border-color: #34D399;
   box-shadow: 0 0 0 4px var(--accent-soft);
 }
 
